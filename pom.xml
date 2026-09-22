@@ -9,9 +9,19 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
   </properties>
-  <!--dependencyManagement-->
+    <dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.11.0</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
 
   <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>src/fr/ul/acl/tests</testSourceDirectory>
+    
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -21,6 +31,16 @@
           <mainClass>fr.ul.acl.start.Main</mainClass>
         </configuration>
       </plugin>
+
+      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+                <excludes>
+                    <exclude>fr/ul/acl/tests/**</exclude>
+                </excludes>
+            </configuration>
+        </plugin>
     </plugins>
   </build>
 </project>
