@@ -1,7 +1,6 @@
-### **Backlog - Sprint 1 (avant la prochaine séance)**
-
 == Tâches par ordre de priorité ==
 
+### **Backlog - Sprint 1 (avant la prochaine séance)**
 1. [Priorité haute] Mettre en place la structure du projet (dossiers src, organisation des packages)
 2. [Priorité haute] Créer la classe Hero (position, affichage)
 3. [Priorité haute] Afficher le plateau de jeu (grille simple)
@@ -12,9 +11,6 @@
 ---
 
 ### **Backlog - Sprint 2**
-
-== Tâches par ordre de priorité ==
-
 1. [Priorité haute] Concevoir et implémenter le chargement du labyrinthe à partir d'un fichier externe
 2. [Priorité haute] Gérer les collisions strictes entre le héros et les murs du labyrinthe
 3. [Priorité moyenne] Permettre la sélection et la gestion de différents niveaux de labyrinthe
@@ -24,9 +20,6 @@
 ---
 
 ### **Backlog - Sprint 3**
-
-== Tâches par ordre de priorité ==
-
 1. [Priorité haute] Créer la case Trésor et gérer la condition de victoire du jeu
 2. [Priorité haute] Ajouter les cases Pièges pour infliger des dégâts au personnage
 3. [Priorité moyenne] Ajouter les cases Passages (téléporteurs) pour déplacer instantanément le personnage
@@ -36,9 +29,6 @@
 ---
 
 ### **Backlog - Sprint 4**
-
-== Tâches par ordre de priorité ==
-
 1. [Priorité haute] Créer la classe Monstre de base et les positionner aléatoirement sur le plateau
 2. [Priorité haute] Implémenter le déplacement aléatoire des monstres standards
 3. [Priorité haute] Gérer les contacts et les collisions entre le héros et les monstres (mort ou dégâts)
