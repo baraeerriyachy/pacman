@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MapReader {
@@ -24,15 +26,26 @@ public class MapReader {
         try (BufferedReader lecteur = new BufferedReader(
                 new InputStreamReader(flux, StandardCharsets.UTF_8))) {
 
+            List<String> lignes = new ArrayList<>();
             String ligne;
-            int y = 0;
-            int largeur = -1;
 
             while ((ligne = lecteur.readLine()) != null) {
-                if (largeur == -1) {
-                    largeur = ligne.length();
-                    plateau = new Plateau(largeur, 10);
-                } else if (ligne.length() != largeur) {
+                lignes.add(ligne);
+            }
+
+            if (lignes.isEmpty()) {
+                throw new IOException("La carte est vide.");
+            }
+
+            int hauteur = lignes.size();
+            int largeur = lignes.get(0).length();
+
+            plateau = new Plateau(largeur, hauteur);
+
+            for (int y = 0; y < hauteur; y++) {
+                ligne = lignes.get(y);
+
+                if (ligne.length() != largeur) {
                     throw new IOException(
                         "Les lignes de la carte doivent avoir la même longueur."
                     );
@@ -71,11 +84,6 @@ public class MapReader {
                             );
                     }
                 }
-                y++;
-            }
-
-            if (y != 10) {
-                throw new IOException("La carte doit avoir 10 lignes.");
             }
 
             if (depart == null) {
