@@ -1,50 +1,68 @@
 package fr.ul.acl.engine;
 
-import javax.swing.JFrame;
+import javax.swing.*;
+import java.awt.*;
 
+import fr.ul.acl.model.HachimiController;
+import fr.ul.acl.model.MusicPlayer;
+import fr.ul.acl.model.OptionsMenu;
 
-/**
- * @author Horatiu Cirstea, Vincent Thomas
- *
- * interface graphique avec son controller et son afficheur
- *
- */
-public class GraphicalInterface  {
+public class GraphicalInterface {
 
-	/**
-	 * le Panel pour l'afficheur
-	 */
-	private DrawingPanel panel;
-	
-	/**
-	 * la construction de l'interface graphique: JFrame avec panel pour le game
-	 * 
-	 * @param gamePainter l'afficheur a utiliser dans le moteur
-	 * @param gameController l'afficheur a utiliser dans le moteur
-	 * 
-	 */
-	public GraphicalInterface(GamePainter gamePainter, GameController gameController){
-		JFrame f=new JFrame();
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		// attacher le panel contenant l'afficheur du game
-		this.panel=new DrawingPanel(gamePainter);
-		f.setContentPane(this.panel);
-		
-		// attacher controller au panel du game
-		this.panel.addKeyListener(gameController);	
-		
-		f.pack();
-		f.setVisible(true);
-		f.getContentPane().setFocusable(true);
-		f.getContentPane().requestFocus();
-	}
-	
-	/**
-	 * mise a jour du dessin
-	 */
-	public void paint() {
-		this.panel.drawGame();	
-	}
-	
+    private DrawingPanel panel;
+    private JFrame frame;
+
+    public GraphicalInterface(
+            GamePainter gamePainter,
+            GameController gameController) {
+
+        frame = new JFrame("Hachimi");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        panel = new DrawingPanel(gamePainter);
+        panel.addKeyListener(gameController);
+        panel.setFocusable(true);
+
+        JButton optionsButton = new JButton("Paramètres");
+
+        optionsButton.addActionListener(e -> {
+
+			HachimiController controller =
+				(HachimiController) gameController;
+
+			MusicPlayer musicPlayer =
+				controller.getMusicPlayer();
+
+			OptionsMenu menu = new OptionsMenu(
+				frame,
+				controller,
+				musicPlayer,
+				() -> {
+					panel.requestFocusInWindow();
+				}
+			);
+
+			menu.setVisible(true);
+
+        });
+
+		JPanel container = new JPanel(new BorderLayout());
+		container.add(panel, BorderLayout.CENTER);
+
+		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		bottomPanel.add(optionsButton);
+
+		container.add(bottomPanel, BorderLayout.SOUTH);
+		frame.setContentPane(container);
+
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        panel.requestFocusInWindow();
+    }
+
+    public void paint() {
+        panel.drawGame();
+    }
 }

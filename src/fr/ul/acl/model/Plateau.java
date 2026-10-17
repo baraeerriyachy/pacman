@@ -3,12 +3,14 @@ package fr.ul.acl.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.Point;
 
 public class Plateau {
 
     private final int largeur;
     private final int hauteur;
     private final List<Obstacle> obstacles = new ArrayList<>();
+    private Point sortie;
 
     public Plateau(int largeur, int hauteur) {
         if (largeur <= 0 || hauteur <= 0) {
@@ -48,23 +50,24 @@ public class Plateau {
         return estDansLimites(x, y) && !estObstacle(x, y);
     }
 
-    public void afficher(Hero hero) {
-        for (int y = 0; y < hauteur; y++) {
-            StringBuilder ligne = new StringBuilder();
 
-            for (int x = 0; x < largeur; x++) {
-                char symbole = '.';
+    public int getLargeur() {
+        return largeur;
+    }
 
-                if (hero.getX() == x && hero.getY() == y) {
-                    symbole = 'H';
-                } else if (estObstacle(x, y)) {
-                    symbole = '#';
-                }
+    public int getHauteur() {
+        return hauteur;
+    }
 
-                ligne.append(symbole).append(' ');
-            }
+    public void setSortie(Point sortie) {
+        this.sortie = sortie;
+    }
 
-            System.out.println(ligne);
-        }
+    public Point getSortie() {
+        return sortie;
+    }
+
+    public boolean arriveSortie(int x, int y) {
+        return x == sortie.x && y == sortie.y ;
     }
 }
