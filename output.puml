@@ -1,0 +1,172 @@
+@startuml
+skinparam classAttributeIconSize 0
+class GameEngineGraphical{
+- game : Game
+- gamePainter : GamePainter
+- gameController : GameController
+- gui : GraphicalInterface
++ GameEngineGraphical(game : Game, gamePainter : GamePainter, gameController : GameController)
++ run() : void
+}
+class Hero{
+- x : int
+- y : int
++ Hero(x : int, y : int)
++ getX() : int
++ getY() : int
++ deplacer(dx : int, dy : int) : void
++ toString() : String
+}
+class HachimiPainter{
+- {static} TAILLE_CASE : int
+- game : HachimiGame
+- images : Map<String,Image>
++ HachimiPainter(game : HachimiGame)
+- loadImage(name : String, filename : String) : void
++ draw(im : BufferedImage) : void
++ getWidth() : int
++ getHeight() : int
+}
+HachimiPainter ..|> GamePainter
+class DrawingPanel{
+- {static} serialVersionUID : long
+- painter : GamePainter
+- nextImage : BufferedImage
+- currentImage : BufferedImage
+- width : int
++ DrawingPanel(painter : GamePainter)
++ drawGame() : void
++ paint(g : Graphics) : void
+}
+DrawingPanel --|> JPanel
+class OptionsMenu{
++ OptionsMenu(parent : JFrame, controller : HachimiController, musicPlayer : MusicPlayer, onClose : Runnable)
+}
+OptionsMenu --|> JFrame
+class Plateau{
+- largeur : int
+- hauteur : int
+- obstacles : List<Obstacle>
+- sortie : Point
++ Plateau(largeur : int, hauteur : int)
++ estDansLimites(x : int, y : int) : boolean
++ estObstacle(x : int, y : int) : boolean
++ ajouterObstacle(x : int, y : int) : boolean
++ peutAller(x : int, y : int) : boolean
++ getLargeur() : int
++ getHauteur() : int
++ setSortie(sortie : Point) : void
++ getSortie() : Point
++ arriveSortie(x : int, y : int) : boolean
+}
+class HachimiGame{
+- plateau : Plateau
+- hero : Hero
+- won : boolean
+- startTime : long
+- elapsedSeconds : long
++ HachimiGame(source : String)
++ evolve(commande : Cmd) : void
++ isFinished() : boolean
++ getPlateau() : Plateau
++ getHero() : Hero
++ getElapsedSeconds() : long
+}
+HachimiGame ..|> Game
+class Obstacle{
+- x : int
+- y : int
++ Obstacle(x : int, y : int)
++ getX() : int
++ getY() : int
++ estEnPosition(x : int, y : int) : boolean
+}
+class HachimiController{
+- commandeEnCours : Cmd
+- keyboardLayout : KeyboardLayout
+- musicPlayer : MusicPlayer
++ HachimiController()
++ HachimiController(musicPlayer : MusicPlayer)
++ getCommand() : Cmd
++ setKeyboardLayout(layout : KeyboardLayout) : void
++ getKeyboardLayout() : KeyboardLayout
++ setMusicPlayer(musicPlayer : MusicPlayer) : void
++ getMusicPlayer() : MusicPlayer
++ keyPressed(e : KeyEvent) : void
++ keyReleased(e : KeyEvent) : void
++ keyTyped(e : KeyEvent) : void
+}
+HachimiController ..|> GameController
+class WinScreen{
++ WinScreen(elapsedSeconds : long)
+}
+WinScreen --|> JFrame
+class MapReader{
+- plateau : Plateau
+- depart : Point
++ MapReader(nomFichier : String)
++ getPlateau() : Plateau
++ getDepart() : Point
+}
+class HeroTest{
++ positionInitiale() : void
++ deplacementADroite() : void
++ deplacementEnBas() : void
+}
+class GraphicalInterface{
+- panel : DrawingPanel
+- frame : JFrame
++ GraphicalInterface(gamePainter : GamePainter, gameController : GameController)
++ paint() : void
+}
+class MusicPlayer{
+- clip : Clip
+- muted : boolean
+- volumeControl : FloatControl
++ playBackgroundMusic() : void
++ setMuted(muted : boolean) : void
++ isMuted() : boolean
++ stop() : void
+}
+class Main{
++ {static} main(args : String[]) : void
+}
+GameEngineGraphical--"- game" Game
+GameEngineGraphical--"- gamePainter" GamePainter
+GameEngineGraphical--"- gameController" GameController
+GameEngineGraphical--"- gui" GraphicalInterface
+HachimiPainter--"- game" HachimiGame
+DrawingPanel--"- painter" GamePainter
+HachimiGame--"- plateau" Plateau
+HachimiGame--"- hero" Hero
+HachimiController--"- commandeEnCours" Cmd
+HachimiController--"- keyboardLayout" KeyboardLayout
+HachimiController--"- musicPlayer" MusicPlayer
+MapReader--"- plateau" Plateau
+GraphicalInterface--"- panel" DrawingPanel
+interface GamePainter{
++ {abstract} draw(image : BufferedImage) : void
++ {abstract} getWidth() : int
++ {abstract} getHeight() : int
+}
+interface GameController{
++ getCommand() : Cmd
+}
+GameController --|> KeyListener
+interface Game{
++ evolve(userCmd : Cmd) : void
++ isFinished() : boolean
++ getElapsedSeconds() : long
+}
+enum Cmd{
+LEFT
+RIGHT
+UP
+DOWN
+IDLE
+}
+enum KeyboardLayout{
+AZERTY
+QWERTY
+}
+@enduml

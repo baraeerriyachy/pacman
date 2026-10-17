@@ -7,7 +7,7 @@ public class WinScreen extends JFrame {
 
     public WinScreen(long elapsedSeconds) {
         setTitle("Hachimi - Victoire !");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
         JLabel title = new JLabel(
@@ -27,7 +27,6 @@ public class WinScreen extends JFrame {
 
         JButton closeButton = new JButton("Quitter");
         closeButton.addActionListener(e -> {
-            dispose();
             System.exit(0);
         });
 
