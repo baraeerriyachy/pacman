@@ -21,6 +21,12 @@
   <build>
     <sourceDirectory>src</sourceDirectory>
     <testSourceDirectory>src/fr/ul/acl/tests</testSourceDirectory>
+
+    <resources>
+        <resource>
+            <directory>src/fr/ul/acl/resource</directory>
+        </resource>
+    </resources>
     
     <plugins>
       <plugin>

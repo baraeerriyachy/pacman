@@ -1,5 +1,9 @@
 package fr.ul.acl.engine;
 
+import javax.swing.SwingUtilities;
+import fr.ul.acl.model.WinScreen;
+import fr.ul.acl.model.HachimiGame;
+
 /**
  * @author Horatiu Cirstea, Vincent Thomas
  *
@@ -65,6 +69,12 @@ public class GameEngineGraphical {
 			// met en attente
 			Thread.sleep(100);
 		}
+
+		SwingUtilities.invokeLater(() ->
+            new WinScreen(
+                game.getElapsedSeconds()
+            ).setVisible(true)
+        );
 	}
 
 }
