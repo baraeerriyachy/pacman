@@ -84,8 +84,8 @@ public class HachimiPainter implements GamePainter {
 
 		crayon.drawImage(
 			images.get("hero"),
-			game.getHero().getX() * TAILLE_CASE,
-			game.getHero().getY() * TAILLE_CASE,
+			(int)(game.getHero().getX() * TAILLE_CASE),
+			(int)(game.getHero().getY() * TAILLE_CASE),
 			TAILLE_CASE,
 			TAILLE_CASE,
 			null

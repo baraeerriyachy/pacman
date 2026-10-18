@@ -29,14 +29,15 @@ package "fr.ul.acl.engine" {
 }
 
 package "fr.ul.acl.model" {
-    class Hero {
-        - x : int
-        - y : int
-        + Hero(x : int, y : int)
-        + getX() : int
-        + getY() : int
-        + deplacer(dx : int, dy : int) : void
-        + toString() : String
+    class Hero{
+        - x : float
+        - y : float
+        - {static} vitesse : float
+        + Hero(x : float, y : float)
+        + getX() : float
+        + getY() : float
+        + getVitesse() : float
+        + deplacer(nx : float, ny : float) : void
     }
 
     class HachimiGame {
@@ -89,7 +90,7 @@ package "fr.ul.acl.model" {
         + estDansLimites(x : int, y : int) : boolean
         + estObstacle(x : int, y : int) : boolean
         + ajouterObstacle(x : int, y : int) : boolean
-        + peutAller(x : int, y : int) : boolean
+        + peut_passer(x : float, y : float) : boolean
         + getLargeur() : int
         + getHauteur() : int
         + setSortie(sortie : Point) : void

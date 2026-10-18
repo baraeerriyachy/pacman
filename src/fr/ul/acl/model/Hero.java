@@ -1,30 +1,30 @@
 package fr.ul.acl.model;
 
 public class Hero {
-    private int x;
-    private int y;
+    private float x;
+    private float y;
+    private static final float vitesse = 0.2f;
 
-    public Hero(int x, int y) {
+    public Hero(float x, float y) {
         this.x = x;
         this.y = y;
     }
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 
-    /** Déplace le héros de dx colonnes et dy lignes. */
-    public void deplacer(int dx, int dy) {
-        x += dx;
-        y += dy;
+    public float getVitesse() {
+        return vitesse;
     }
 
-    @Override
-    public String toString() {
-        return "Hero(" + x + "," + y + ")";
+    /** Déplace le héros de dx colonnes et dy lignes. */
+    public void deplacer(float nx, float ny) {
+        x =  nx;
+        y = ny;
     }
 }

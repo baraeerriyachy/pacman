@@ -23,19 +23,31 @@ public class Plateau {
         this.hauteur = hauteur;
     }
 
-    public boolean estDansLimites(int x, int y) {
-        return x >= 0 && x < largeur
-                && y >= 0 && y < hauteur;
+    public boolean estDansLimites(float x, float y) {
+        return x >= 0 && x + 1 <= largeur
+        && y >= 0 && y + 1 <= hauteur;
     }
 
     public boolean estObstacle(int x, int y) {
         for (Obstacle obstacle : obstacles) {
-            if (obstacle.estEnPosition(x, y)) {
+            if (obstacle.getX() == x && obstacle.getY() == y) {
                 return true;
             }
         }
         return false;
     }
+
+    public boolean peut_passer(float x, float y) {
+    for (Obstacle obstacle : obstacles) {
+        if (x < obstacle.getX() + 1
+            && x + 1 > obstacle.getX()
+            && y < obstacle.getY() + 1
+            && y + 1 > obstacle.getY()) {
+            return false;
+        }
+    }
+    return true;
+}
 
     public boolean ajouterObstacle(int x, int y) {
         if (!estDansLimites(x, y) || estObstacle(x, y)) {
@@ -44,10 +56,6 @@ public class Plateau {
 
         obstacles.add(new Obstacle(x, y));
         return true;
-    }
-
-    public boolean peutAller(int x, int y) {
-        return estDansLimites(x, y) && !estObstacle(x, y);
     }
 
 

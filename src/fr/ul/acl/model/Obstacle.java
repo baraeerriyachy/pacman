@@ -18,7 +18,4 @@ public class Obstacle {
         return y;
     }
 
-    public boolean estEnPosition(int x, int y) {
-        return this.x == x && this.y == y;
-    }
 }
