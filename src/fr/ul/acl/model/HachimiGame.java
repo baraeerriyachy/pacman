@@ -19,6 +19,7 @@ import fr.ul.acl.model.MapReader;
  * 
  */
 public class HachimiGame implements Game {
+	private static final float pas = 0.2f;
 	private Plateau plateau;
     private Hero hero;
 	private boolean won = false;
@@ -60,40 +61,40 @@ public class HachimiGame implements Game {
 	public void evolve(Cmd commande) {
 		//System.out.println("Execute "+commande);
 		
-		int dx = 0;
-        int dy = 0;
+		float dx = 0;
+        float dy = 0;
 
 		switch (commande) {
 			case LEFT:
-				dx = -1;
+				dx = -pas;
 				break;
 			case RIGHT:
-				dx = 1;
+				dx = pas;
 				break;
 			case UP:
-				dy = -1;
+				dy = -pas;
 				break;
 			case DOWN:
-				dy = 1;
+				dy = pas;
 				break;
 		}
 
-		int nx = hero.getX() + dx;
-		int ny = hero.getY() + dy;
+		float nx = hero.getX() + dx; nx = Math.round(nx * 100f) / 100f;
+		float ny = hero.getY() + dy; ny = Math.round(ny * 100f) / 100f;
 
 		if (!plateau.estDansLimites(nx, ny)) {
 			System.out.println(
 				"Déplacement impossible : hors limites."
 			);
-		} else if (plateau.estObstacle(nx, ny)) {
+		} else if (!plateau.peut_passer(nx, ny)) {
 			System.out.println(
 				"Déplacement impossible : obstacle."
 			);
 		} else {
-			hero.deplacer(dx, dy);
+			hero.deplacer(nx, ny);
 		}
 
-		if (plateau.arriveSortie(hero.getX(), hero.getY())){
+		if (plateau.arriveSortie((int)hero.getX(), (int)hero.getY())){
 			won = true;
 			elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
 		}
