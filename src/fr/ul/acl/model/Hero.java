@@ -3,6 +3,7 @@ package fr.ul.acl.model;
 public class Hero {
     private float x;
     private float y;
+    private static final float vitesse = 0.2f;
 
     public Hero(float x, float y) {
         this.x = x;
@@ -17,14 +18,13 @@ public class Hero {
         return y;
     }
 
+    public float getVitesse() {
+        return vitesse;
+    }
+
     /** Déplace le héros de dx colonnes et dy lignes. */
     public void deplacer(float nx, float ny) {
         x =  nx;
         y = ny;
-    }
-
-    @Override
-    public String toString() {
-        return "Hero(" + x + "," + y + ")";
     }
 }

@@ -19,7 +19,6 @@ import fr.ul.acl.model.MapReader;
  * 
  */
 public class HachimiGame implements Game {
-	private static final float pas = 0.2f;
 	private Plateau plateau;
     private Hero hero;
 	private boolean won = false;
@@ -63,19 +62,20 @@ public class HachimiGame implements Game {
 		
 		float dx = 0;
         float dy = 0;
+		float v = hero.getVitesse();
 
 		switch (commande) {
 			case LEFT:
-				dx = -pas;
+				dx = -v;
 				break;
 			case RIGHT:
-				dx = pas;
+				dx = v;
 				break;
 			case UP:
-				dy = -pas;
+				dy = -v;
 				break;
 			case DOWN:
-				dy = pas;
+				dy = v;
 				break;
 		}
 
