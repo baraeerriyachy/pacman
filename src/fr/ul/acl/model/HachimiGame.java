@@ -125,5 +125,19 @@ public class HachimiGame implements Game {
 	// public boolean hasWon() {
 	// 	return won;
 	// }
+	
+	public void recommencer() throws IOException {
+
+	    MapReader lecteur = new MapReader("map.txt");
+	    plateau = lecteur.getPlateau();
+
+	    Point depart = lecteur.getDepart();
+	    hero = new Hero(depart.x, depart.y);
+
+	    won = false;
+	    elapsedSeconds = 0;
+	    startTime = System.currentTimeMillis();
+	}
+	
 }
 
