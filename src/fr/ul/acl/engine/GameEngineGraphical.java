@@ -1,80 +1,88 @@
+
 package fr.ul.acl.engine;
 
 import javax.swing.SwingUtilities;
 import fr.ul.acl.model.WinScreen;
 import fr.ul.acl.model.HachimiGame;
+import fr.ul.acl.model.HachimiController;
 
-/**
- * @author Horatiu Cirstea, Vincent Thomas
- *
- * moteur de game generique.
- * On lui passe un game et un afficheur et il permet d'executer un game.
- */
+import java.io.IOException;
+
 public class GameEngineGraphical {
 
-	/**
-	 * le game a executer
-	 */
-	private Game game;
+    private Game game;
+    private GamePainter gamePainter;
+    private GameController gameController;
+    private GraphicalInterface gui;
 
-	/**
-	 * l'afficheur a utiliser pour le rendu
-	 */
-	private GamePainter gamePainter;
+    public GameEngineGraphical(
+            Game game,
+            GamePainter gamePainter,
+            GameController gameController) {
 
-	/**
-	 * le controlleur a utiliser pour recuperer les commandes
-	 */
-	private GameController gameController;
+        this.game = game;
+        this.gamePainter = gamePainter;
+        this.gameController = gameController;
+    }
 
-	/**
-	 * l'interface graphique
-	 */
-	private GraphicalInterface gui;
+    public void run() throws InterruptedException {
 
-	/**
-	 * construit un moteur
-	 * 
-	 * @param game
-	 *            game a lancer
-	 * @param gamePainter
-	 *            afficheur a utiliser
-	 * @param gameController
-	 *            controlleur a utiliser
-	 *            
-	 */
-	public GameEngineGraphical(Game game, GamePainter gamePainter, GameController gameController) {
-		// creation du game
-		this.game = game;
-		this.gamePainter = gamePainter;
-		this.gameController = gameController;
-	}
-
-	/**
-	 * permet de lancer le game
-	 */
-	public void run() throws InterruptedException {
-
-		// creation de l'interface graphique
-		this.gui = new GraphicalInterface(this.gamePainter,this.gameController);
-
-		// boucle de game
-		while (!this.game.isFinished()) {
-			// demande controle utilisateur
-			Cmd c = this.gameController.getCommand();
-			// fait evoluer le game
-			this.game.evolve(c);
-			// affiche le game
-			this.gui.paint();
-			// met en attente
-			Thread.sleep(100);
-		}
-
-		SwingUtilities.invokeLater(() ->
-            new WinScreen(
-                game.getElapsedSeconds()
-            ).setVisible(true)
+        // Création de l'interface graphique
+        this.gui = new GraphicalInterface(
+            this.gamePainter,
+            this.gameController
         );
-	}
 
+        // Lancement de la première partie
+        playGame();
+    }
+
+    private void playGame() throws InterruptedException {
+
+        while (!this.game.isFinished()) {
+
+            Cmd c = this.gameController.getCommand();
+
+            this.game.evolve(c);
+
+            this.gui.paint();
+
+            Thread.sleep(100);
+        }
+
+        // Affichage de la fenêtre de victoire
+        SwingUtilities.invokeLater(() -> {
+            new WinScreen(
+                game.getElapsedSeconds(),
+                this::restartGame
+            ).setVisible(true);
+        });
+    }
+
+    private void restartGame() {
+
+        try {
+            // Réinitialisation du jeu
+            ((HachimiGame) game).recommencer();
+            
+            // reinitialisation de la commande du jeu 
+            ((HachimiController) gameController).resetCommand();
+            
+
+            // Relancement de la boucle dans un nouveau thread
+            Thread gameThread = new Thread(() -> {
+                try {
+                    playGame();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+
+            gameThread.start();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
+

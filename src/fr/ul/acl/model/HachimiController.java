@@ -109,4 +109,11 @@ public class HachimiController implements GameController {
     public void keyTyped(KeyEvent e) {
         // Nothing to do
     }
+    
+   // reinitialisation de la commande 
+    public void resetCommand() {
+        this.commandeEnCours = Cmd.IDLE;
+    }
+    
+    
 }
