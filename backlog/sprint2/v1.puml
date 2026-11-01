@@ -52,6 +52,7 @@ package "fr.ul.acl.model" {
         + getPlateau() : Plateau
         + getHero() : Hero
         + getElapsedSeconds() : long
+        + recommencer() : void
     }
 
     class HachimiPainter {
@@ -79,6 +80,7 @@ package "fr.ul.acl.model" {
         + keyPressed(e : KeyEvent) : void
         + keyReleased(e : KeyEvent) : void
         + keyTyped(e : KeyEvent) : void
+        + resetCommand() : void
     }
 
     class Plateau {
@@ -135,7 +137,7 @@ package "fr.ul.acl.model" {
     }
 
     class WinScreen {
-        + WinScreen(elapsedSeconds : long)
+        + WinScreen(elapsedSeconds : long, restartAction : Runnable)
     }
 }
 
