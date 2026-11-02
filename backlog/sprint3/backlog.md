@@ -31,3 +31,4 @@
 | Implémentation de plusieurs niveaux avec des cartes et des difficultés différentes | Barae |
 | Mise en place d'un système de sauvegarde et de reprise de la progression du joueur | Mohammed  |
 | Évolution du fichier de configuration en format CSV pour intégrer davantage d'éléments du jeu | Alson |
+| Interface d'aide présentant les règles du jeu, les commandes et les différentes mécaniques | Barae |
