@@ -46,13 +46,28 @@ package "fr.ul.acl.model" {
         - won : boolean
         - startTime : long
         - elapsedSeconds : long
+        - level : GameLevel
         + HachimiGame(source : String)
+        + HachimiGame(source : String, level : GameLevel)
+        + getLevel() : GameLevel
         + evolve(commande : Cmd) : void
         + isFinished() : boolean
         + getPlateau() : Plateau
         + getHero() : Hero
         + getElapsedSeconds() : long
         + recommencer() : void
+    }
+
+    class GameLevel {
+        - name : String
+        - difficulty : String
+        - mapFile : String
+        + {static} getAvailableLevels() : List<GameLevel>
+        + {static} getDefaultLevel() : GameLevel
+        + getName() : String
+        + getDifficulty() : String
+        + getMapFile() : String
+        + toString() : String
     }
 
     class HachimiPainter {
@@ -162,6 +177,7 @@ GameEngineGraphical ..> WinScreen : affiche
 ' Model relationships
 HachimiPainter --> HachimiGame : game
 HachimiGame --> Plateau : plateau
+HachimiGame --> GameLevel : level
 HachimiGame --> Hero : hero
 HachimiGame --> Cmd : commande
 HachimiController --> Cmd : commandeEnCours
@@ -172,4 +188,5 @@ Plateau --> Obstacle : obstacles
 OptionsMenu --> HachimiController : controller
 OptionsMenu --> MusicPlayer : musicPlayer
 Main ..> GameEngineGraphical : lance
+Main ..> GameLevel : selectionne
 @enduml

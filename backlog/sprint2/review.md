@@ -19,7 +19,7 @@ Bilan : Le Sprint 2 est globalement terminé. Toutes les tâches ont été réal
 | ------------------------------------------------------------------------------------------------- | ----------------- | ------------- |
 | Charger une carte depuis un fichier et initialiser le plateau, la position de départ et la sortie | Alson             | Terminé     |
 | Améliorer l'affichage avec le sprite du héros et des textures de base                             | Alson             | Terminé     |
-| Ajouter plusieurs niveaux ou cartes de difficulté différente                                      | Barae et Mohammed | ❌ Pas commencé |
+| Ajouter plusieurs niveaux ou cartes de difficulté différente                                      | Barae et Mohammed | Terminé (3 cartes sélectionnables) |
 | Ajouter la possibilité de reprendre la partie                                                     | Moutawakil        |  Terminé     |
 
 ### Priorité basse

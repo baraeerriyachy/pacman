@@ -24,11 +24,21 @@ public class HachimiGame implements Game {
 	private boolean won = false;
 	private long startTime;
 	private long elapsedSeconds;
+    private final GameLevel level;
 	/**
 	 * constructeur avec fichier source pour le help
 	 * 
 	 */
 	public HachimiGame(String source) throws IOException {
+        this(source, GameLevel.getDefaultLevel());
+    }
+
+    /** Construit une partie sur le niveau choisi. */
+    public HachimiGame(String source, GameLevel level) throws IOException {
+        if (level == null) {
+            throw new IllegalArgumentException("Le niveau ne peut pas etre null.");
+        }
+        this.level = level;
 		BufferedReader helpReader;
 		try {
 			helpReader = new BufferedReader(new FileReader(source));
@@ -42,7 +52,7 @@ public class HachimiGame implements Game {
 		}
 
 		
-		MapReader lecteur = new MapReader("map.txt");
+		MapReader lecteur = new MapReader(level.getMapFile());
 		plateau = lecteur.getPlateau();
 
 		Point depart = lecteur.getDepart();
@@ -110,6 +120,10 @@ public class HachimiGame implements Game {
 		return won;
 	}
 
+	public GameLevel getLevel() {
+        return level;
+    }
+
 	public Plateau getPlateau() {
 		return plateau;
 	}
@@ -128,7 +142,7 @@ public class HachimiGame implements Game {
 	
 	public void recommencer() throws IOException {
 
-	    MapReader lecteur = new MapReader("map.txt");
+	    MapReader lecteur = new MapReader(level.getMapFile());
 	    plateau = lecteur.getPlateau();
 
 	    Point depart = lecteur.getDepart();
