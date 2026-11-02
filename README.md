@@ -28,3 +28,39 @@ pacman/
                 └── ul/
                     └── acl/
                         └── tests/      # Tests unitaires (JUnit)
+
+
+
+
+# Guide de connection au projet 
+
+#1. Prerequis 
+
+
+Avant de commencer, assurez-vous d'avoir installé les outils suivants sur votre ordinateur :
+
+ -----> Java JDK 17 ou supérieur : pour compiler et exécuter le programme.
+----->  Git : pour récupérer le projet depuis GitHub.
+----->  Apache Maven 3.9 ou supérieur : pour gérer les dépendances et compiler le projet.
+
+
+
+Pour vérifier que ces outils sont correctement installés, ouvrez un terminal et exécutez :
+
+-----> java -version
+-----> javac -version
+-----> git --version
+-----> mvn -version
+
+2. Exécution du jeu :
+
+Pour lancer le projet suivre ces instructions :
+recupérer  le  projet:  
+git clone https://github.com/baraeerriyachy/pacman.git
+
+puis faire :
+
+-----> mvn clean compile
+-----> mvn exec:java 
+
+
