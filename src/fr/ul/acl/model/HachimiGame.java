@@ -10,6 +10,7 @@ import fr.ul.acl.engine.Cmd;
 import fr.ul.acl.engine.Game;
 
 import fr.ul.acl.model.MapReader;
+import java.util.ArrayList;
 
 /**
  * @author Horatiu Cirstea, Vincent Thomas
@@ -24,6 +25,7 @@ public class HachimiGame implements Game {
 	private boolean won = false;
 	private long startTime;
 	private long elapsedSeconds;
+    private final List<Monstre> monstres = new ArrayList<>();
 	/**
 	 * constructeur avec fichier source pour le help
 	 * 
@@ -76,7 +78,9 @@ public class HachimiGame implements Game {
 				break;
 			case DOWN:
 				dy = v;
-				break;
+				break; 
+			case IDLE:
+				return;
 		}
 
 		float nx = hero.getX() + dx; nx = Math.round(nx * 100f) / 100f;
