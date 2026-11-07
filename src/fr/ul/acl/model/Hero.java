@@ -1,30 +1,51 @@
 package fr.ul.acl.model;
 
-public class Hero {
-    private float x;
-    private float y;
-    private static final float vitesse = 0.2f;
+public class Hero extends Entity {
+
+    private static final int MAX_HP = 100;
+    private static final long INVULNERABILITY_DURATION = 1000; // 1 second
+
+    private int healthPoints;
+    private long lastDamageTime;
 
     public Hero(float x, float y) {
-        this.x = x;
-        this.y = y;
+        super(x, y);
+        this.healthPoints = MAX_HP;
+        this.lastDamageTime = 0;
     }
 
-    public float getX() {
-        return x;
+    public int getHealthPoints() {
+        return healthPoints;
     }
 
-    public float getY() {
-        return y;
+    public int getMaxHp() {
+        return MAX_HP;
     }
 
-    public float getVitesse() {
-        return vitesse;
+    public void teleport(int x, int y) {
+        pos.set(x, y);
     }
 
-    /** Déplace le héros de dx colonnes et dy lignes. */
-    public void deplacer(float nx, float ny) {
-        x =  nx;
-        y = ny;
+    public boolean takeDamage(int damage) {
+        long currentTime = System.currentTimeMillis();
+
+        // Check whether the hero is still invulnerable
+        if (currentTime - lastDamageTime < INVULNERABILITY_DURATION) {
+            return false;
+        }
+
+        // Reject invalid damage or damage to a dead hero
+        if (damage <= 0 || healthPoints <= 0) {
+            return false;
+        }
+
+        healthPoints = Math.max(0, healthPoints - damage);
+        lastDamageTime = currentTime;
+
+        return true;
+    }
+
+    public boolean isDead() {
+        return healthPoints == 0;
     }
 }

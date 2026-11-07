@@ -1,0 +1,231 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "fr.ul.acl.start" {
+
+    class Main {
+        + {static} main(args : String[]) : void
+    }
+}
+
+package "fr.ul.acl.engine" {
+
+    class GraphicalInterface {
+    }
+
+    class GameEngineGraphical {
+    }
+
+    interface GameController {
+    }
+
+    interface Game {
+    }
+
+    interface GamePainter {
+    }
+}
+
+package "fr.ul.acl.model" {
+
+    class Hero {
+        - {static} MAX_HP : int
+        - {static} INVULNERABILITY_DURATION : long
+        - healthPoints : int
+        - lastDamageTime : long
+        + Hero(x : float, y : float)
+        + getHealthPoints() : int
+        + getMaxHp() : int
+        + teleport(x : int, y : int) : void
+        + takeDamage(damage : int) : boolean
+        + isDead() : boolean
+    }
+
+    class Block {
+        - type : Type
+        - destination : Point
+        - damage : int
+        + {static} EMPTY : Block
+        - Block(type : Type, destination : Point, damage : int)
+        + {static} wall() : Block
+        + {static} trap(damage : int) : Block
+        + {static} portal(destination : Point) : Block
+        + getType() : Type
+        + getDestination() : Point
+        + getDamage() : int
+    }
+
+    enum Type {
+        WALL
+        TRAP
+        PORTAL
+        EMPTY
+    }
+
+    class Position {
+        + x : float
+        + y : float
+        - {static} MARGIN : float
+        + Position(x : float, y : float)
+        + set(x : float, y : float) : void
+        + xNext() : int
+        + yNext() : int
+        + xPrev() : int
+        + yPrev() : int
+        + isOverlapping(p : Position) : boolean
+    }
+
+    class Plateau {
+        - largeur : int
+        - hauteur : int
+        - sortie : Point
+        - grid : Block[][]
+        + Plateau(largeur : int, hauteur : int)
+        + isInsideMap(p : Position) : boolean
+        + getBlockType(x : int, y : int) : Block.Type
+        + isFree(p : Position) : boolean
+        + portalActive(p : Position) : Point
+        + trapDamage(p : Position) : int
+        + setBlock(x : int, y : int, block : Block) : void
+        + getLargeur() : int
+        + getHauteur() : int
+        + setSortie(sortie : Point) : void
+        + getSortie() : Point
+        + arriveSortie(p : Position) : boolean
+    }
+
+    class HachimiGame {
+        - plateau : Plateau
+        - hero : Hero
+        - won : boolean
+        - startTime : long
+        - elapsedSeconds : long
+        - monstres : List<Monstre>
+        - {static} DEFAULT_MOVES : int
+        + HachimiGame(source : String)
+        + evolve(commande : Cmd) : void
+        + evolveHero(commande : Cmd) : Position
+        + isFinished() : boolean
+        + getPlateau() : Plateau
+        + getHero() : Hero
+        + getMonstres() : List<Monstre>
+        + getElapsedSeconds() : long
+        + hasWon() : boolean
+        + recommencer() : void
+        - getMaxMove(m : Monstre, direction : Point) : int
+        - initializeMonsterDirection() : void
+    }
+
+    class GameOverScreen {
+        + GameOverScreen(won : boolean, elapsedSeconds : long, restartAction : Runnable)
+    }
+
+    class Monstre {
+        - damage : int
+        - maxMove : int
+        - moveCount : float
+        - intangible : boolean
+        + Monstre(x : float, y : float, damage : int, speed : float)
+        + Monstre(x : float, y : float, damage : int, speed : float, intangible : boolean)
+        + {static} zombie(x : float, y : float) : Monstre
+        + {static} ghost(x : float, y : float) : Monstre
+        + isIntangible() : boolean
+        + getDamage() : int
+        + setMaxMove(max_move : int) : void
+        - inverseDirection() : void
+        + move() : void
+    }
+
+    class HachimiController {
+        - commandeEnCours : Cmd
+        - keyboardLayout : KeyboardLayout
+        - musicPlayer : MusicPlayer
+        + HachimiController()
+        + HachimiController(musicPlayer : MusicPlayer)
+        + getCommand() : Cmd
+        + setKeyboardLayout(layout : KeyboardLayout) : void
+        + getKeyboardLayout() : KeyboardLayout
+        + setMusicPlayer(musicPlayer : MusicPlayer) : void
+        + getMusicPlayer() : MusicPlayer
+        + keyPressed(e : KeyEvent) : void
+        + keyReleased(e : KeyEvent) : void
+        + keyTyped(e : KeyEvent) : void
+        + resetCommand() : void
+    }
+
+    class HachimiPainter {
+        - {static} TAILLE_CASE : int
+        - game : HachimiGame
+        - images : Map<String,Image>
+        + HachimiPainter(game : HachimiGame)
+        - loadImage(name : String, filename : String) : void
+        + draw(im : BufferedImage) : void
+        + getWidth() : int
+        + getHeight() : int
+        - drawHealthBar(g2 : Graphics2D, hero : Hero) : void
+    }
+
+    abstract class Entity {
+        # pos : Position
+        # direction : Point
+        # vitesse : float
+        - nPos : Position
+        + Entity(x : float, y : float)
+        + Entity(x : float, y : float, vitesse : float)
+        + setDirection(dx : int, dy : int) : void
+        + getNewPos() : Position
+        + move() : void
+        + getPos() : Position
+    }
+
+    class MapReader {
+        - monstres : List<Monstre>
+        - plateau : Plateau
+        - depart : Point
+        + MapReader(nomFichier : String)
+        + getPlateau() : Plateau
+        + getDepart() : Point
+        + getMonstres() : List<Monstre>
+    }
+}
+
+' Inheritance
+Hero --|> Entity
+Monstre --|> Entity
+
+' Interface implementation
+HachimiGame ..|> Game
+HachimiController ..|> GameController
+HachimiPainter ..|> GamePainter
+
+' Game composition
+HachimiGame *-- "1" Plateau
+HachimiGame *-- "1" Hero
+HachimiGame *-- "*" Monstre
+HachimiGame ..> MapReader : loads map
+
+' Entity relationships
+Entity *-- Position : pos
+Entity *-- Position : nPos
+
+' Map relationships
+Plateau *-- "0..*" Block : grid
+Block --> Type
+
+MapReader *-- Plateau
+MapReader o-- "*" Monstre
+
+' Painter relationships
+HachimiPainter --> HachimiGame
+HachimiPainter ..> Hero
+
+' Graphical engine relationships
+Main ..> GameEngineGraphical
+GameEngineGraphical --> GraphicalInterface
+GameEngineGraphical --> Game
+GameEngineGraphical --> GameController
+GameEngineGraphical --> GamePainter
+GameOverScreen ..> HachimiGame : restart
+@enduml
