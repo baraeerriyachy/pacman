@@ -74,6 +74,13 @@ public class HachimiPainter implements GamePainter {
 
 		for (int y = 0; y < game.getPlateau().getHauteur(); y++) {
 			for (int x = 0; x < game.getPlateau().getLargeur(); x++) {
+				// String image = null;
+				// switch (blockType) {
+				// 	case WALL: image = "wall"; break;
+				// 	case TRAP: image = "trap"; break;
+				// 	case PORTAL: image = "portal";break;
+				// 	case EMPTY:break;
+				// }
 				String image = switch (game.getPlateau().getBlockType(x, y)) {
 					case WALL -> "wall";
 					case TRAP -> "trap";
