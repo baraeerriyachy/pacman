@@ -14,7 +14,8 @@ public class GraphicalInterface {
 
     public GraphicalInterface(
             GamePainter gamePainter,
-            GameController gameController) {
+            GameController gameController,
+            Runnable restartAction) {
 
         frame = new JFrame("Hachimi");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,10 +47,18 @@ public class GraphicalInterface {
 
         });
 
+        JButton restartButton = new JButton("Recommencer");
+
+        restartButton.addActionListener(e -> {
+            restartAction.run();
+            panel.requestFocusInWindow();
+        });
+
 		JPanel container = new JPanel(new BorderLayout());
 		container.add(panel, BorderLayout.CENTER);
 
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.add(restartButton);
 		bottomPanel.add(optionsButton);
 
 		container.add(bottomPanel, BorderLayout.SOUTH);

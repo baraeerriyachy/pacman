@@ -2,7 +2,9 @@ package fr.ul.acl.model;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 
 import java.awt.Image;
 import java.util.HashMap;
@@ -11,7 +13,6 @@ import javax.swing.ImageIcon;
 import java.net.URL;
 
 import fr.ul.acl.engine.GamePainter;
-import fr.ul.acl.model.HachimiGame;
 
 /**
  * @author Horatiu Cirstea, Vincent Thomas
@@ -52,6 +53,10 @@ public class HachimiPainter implements GamePainter {
     	loadImage("hero", "cat.gif");
 		loadImage("wall", "wall.png");
 		loadImage("sortie", "sortie.png");
+		loadImage("trap", "trap.png");
+		loadImage("portal", "portal.gif");
+		loadImage("zombie", "zombie.gif");
+		loadImage("ghost", "ghost.gif");
 	}
 
 	/**
@@ -69,9 +74,16 @@ public class HachimiPainter implements GamePainter {
 
 		for (int y = 0; y < game.getPlateau().getHauteur(); y++) {
 			for (int x = 0; x < game.getPlateau().getLargeur(); x++) {
-				if (game.getPlateau().estObstacle(x, y)) {
+				String image = switch (game.getPlateau().getBlockType(x, y)) {
+					case WALL -> "wall";
+					case TRAP -> "trap";
+					case PORTAL -> "portal";
+					case EMPTY -> null;
+				};
+
+				if (image != null) {
 					crayon.drawImage(
-						images.get("wall"),
+						images.get(image),
 						x * TAILLE_CASE,
 						y * TAILLE_CASE,
 						TAILLE_CASE,
@@ -82,14 +94,27 @@ public class HachimiPainter implements GamePainter {
 			}
 		}
 
+		for (Monstre m : game.getMonstres()) {
+			crayon.drawImage(
+				images.get(m.isIntangible() ? "ghost" : "zombie"),
+				(int)(m.getPos().x * TAILLE_CASE),
+				(int)(m.getPos().y * TAILLE_CASE),
+				TAILLE_CASE,
+				TAILLE_CASE,
+				null
+			);
+		}
+
 		crayon.drawImage(
 			images.get("hero"),
-			(int)(game.getHero().getX() * TAILLE_CASE),
-			(int)(game.getHero().getY() * TAILLE_CASE),
+			(int)(game.getHero().getPos().x * TAILLE_CASE),
+			(int)(game.getHero().getPos().y * TAILLE_CASE),
 			TAILLE_CASE,
 			TAILLE_CASE,
 			null
 		);
+
+		drawHealthBar(crayon, game.getHero());
 
 		crayon.drawImage(
 			images.get("sortie"),
@@ -111,4 +136,37 @@ public class HachimiPainter implements GamePainter {
 		return game.getPlateau().getHauteur() * TAILLE_CASE;
 	}
 
+	private void drawHealthBar(Graphics2D g2, Hero hero) {
+		int x = 20;
+		int y = 20;
+		int width = 120;
+		int height = 20;
+
+		int maxHp = hero.getMaxHp();
+		int currentHp = hero.getHealthPoints();
+
+		// Background
+		g2.setColor(Color.DARK_GRAY);
+		g2.fillRoundRect(x, y, width, height, 10, 10);
+
+		// Current health
+		int healthWidth = (int) ((double) currentHp / maxHp * width);
+
+		g2.setColor(Color.GREEN);
+		g2.fillRoundRect(x, y, healthWidth, height, 10, 10);
+
+		// Border
+		g2.setColor(Color.WHITE);
+		g2.drawRoundRect(x, y, width, height, 10, 10);
+
+		// HP text
+		String text = currentHp + " / " + maxHp;
+		g2.setFont(new Font("Arial", Font.BOLD, 12));
+
+		FontMetrics fm = g2.getFontMetrics();
+		int textX = x + (width - fm.stringWidth(text)) / 2;
+		int textY = y + (height - fm.getHeight()) / 2 + fm.getAscent();
+
+		g2.drawString(text, textX, textY);
+	}
 }
