@@ -68,6 +68,7 @@ public class HachimiGame implements Game {
 				hero.setDirection(0, 1);
 				break; 
 			case IDLE:
+				hero.setDirection(0, 0);
 				return hero.getPos();
 		}
 
