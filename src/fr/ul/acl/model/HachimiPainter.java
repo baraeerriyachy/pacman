@@ -60,12 +60,12 @@ public class HachimiPainter implements GamePainter {
 		this.game = game;
 
 		loadImage("background", "background.jpg");
-		loadImage("wall", "rock.png");
-		loadImage("sortie", "sortie.png");
-		loadImage("trap", "trap.gif");
-		loadImage("portal", "portal.gif");
-		loadImage("zombie", "zombie.gif");
-		loadImage("ghost", "ghost.gif");
+		loadImage("wall", "texture/rock.png");
+		loadImage("exit", "exit.gif");
+		loadImage("trap", "texture/trap.gif");
+		loadImage("portal", "texture/portal.gif");
+		loadImage("zombie", "ennemy/zombie.gif");
+		loadImage("ghost", "ennemy/ghost.gif");
 
 		String[] directions = {"back", "front", "left", "right"};
 		String[] states = {"idle", "walk", "hurt"};
@@ -104,28 +104,34 @@ public class HachimiPainter implements GamePainter {
 	}
 
 	private void drawPlateau(Graphics2D crayon){
-		for (int y = 0; y < game.getPlateau().getHauteur(); y++) {
-			for (int x = 0; x < game.getPlateau().getLargeur(); x++) {
-				// String image = null;
-				// switch (blockType) {
-				// 	case WALL: image = "wall"; break;
-				// 	case TRAP: image = "trap"; break;
-				// 	case PORTAL: image = "portal";break;
-				// 	case EMPTY:break;
-				// }
-				String image = switch (game.getPlateau().getBlockType(x, y)) {
-					case WALL -> "wall";
-					case TRAP -> "trap";
-					case PORTAL -> "portal";
-					case EMPTY -> null;
-				};
-
-				if (image != null) {
-					drawBlock(crayon,images.get(image),x,y);
+		Plateau p = game.getPlateau();
+		for (int y = 0; y < p.getHauteur(); y++) {
+			for (int x = 0; x < p.getLargeur(); x++) {
+				String image = null;
+				switch (blockType) {
+					case WALL: image = "wall"; break;
+					case TRAP: image = "trap"; break;
+					case PORTAL: image = "portal";break;
+					case TRIGGER : image = "";break;
+					case EMPTY:break;
 				}
+				// String image = switch (p.getBlockType(x, y)) {
+				// 	case WALL -> "wall";
+				// 	case TRAP -> "trap";
+				// 	case PORTAL -> "portal";
+				// 	case EXIT -> "exit";
+				// 	case TRIGGER -> "";
+				// 	case EMPTY -> null;
+				// };
+
+				if (image == null) 
+					continue;
+				else if(image.isEmpty())
+					drawBlock(crayon,p.getBlockTrigger(x, y).getImage(),x,y);
+				else
+					drawBlock(crayon,images.get(image),x,y);
 			}
 		}
-		drawBlock(crayon, images.get("sortie"),game.getPlateau().getSortie().x, game.getPlateau().getSortie().y);
 	}
 
 	private void drawBackground(Graphics2D crayon, int w, int h){

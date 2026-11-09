@@ -29,13 +29,33 @@ package "fr.ul.acl.engine" {
 }
 
 package "fr.ul.acl.model" {
+    class Trigger{
+        # activated : boolean
+        # activationImg : ImageIcon
+        # staticImg : ImageIcon
+        + Trigger(staticImg : ImageIcon, activationImg : ImageIcon)
+        + {abstract} activate() : void
+        + isActivated() : boolean
+        + getImage() : Image
+    }
+
+    class Tresor{
+        - {static} STATIC_IMG : ImageIcon
+        + Tresor()
+        + activate() : void
+    }
 
     class Hero {
         - {static} MAX_HP : int
         - {static} INVULNERABILITY_DURATION : long
         - healthPoints : int
         - lastDamageTime : long
+        - animationDirection : String
+        - animationState : String
         + Hero(x : float, y : float)
+        + getAnimationState() : String
+        + getAnimationDirection() : String
+        + setDirection(dx : int, dy : int) : void
         + getHealthPoints() : int
         + getMaxHp() : int
         + teleport(x : int, y : int) : void
@@ -43,30 +63,43 @@ package "fr.ul.acl.model" {
         + isDead() : boolean
     }
 
-    class Block {
-        - type : Type
-        - destination : Point
-        - damage : int
-        + {static} EMPTY : Block
-        - Block(type : Type, destination : Point, damage : int)
-        + {static} wall() : Block
-        + {static} trap(damage : int) : Block
-        + {static} portal(destination : Point) : Block
-        + getType() : Type
-        + getDestination() : Point
-        + getDamage() : int
+    class Block{
+    - type : Type
+    - destination : Point
+    - damage : int
+    - trigger : Trigger
+    + {static} EMPTY : Block
+    - Block(type : Type, destination : Point, damage : int)
+    + setTrigger(trigger : Trigger) : void
+    + getTrigger() : Trigger
+    + {static} wall() : Block
+    + {static} exit() : Block
+    + {static} trap(damage : int) : Block
+    + {static} portal(destination : Point) : Block
+    + {static} trigger(trigger : Trigger) : Block
+    + getType() : Type
+    + getDestination() : Point
+    + getDamage() : int
     }
 
-    enum Type {
+    class Lever{
+    - {static} STATIC_IMG : ImageIcon
+    + Lever()
+    + activate() : void
+    }
+
+    enum Type{
         WALL
         TRAP
         PORTAL
         EMPTY
+        EXIT
+        TRIGGER
     }
 
     class Position {
         + x : float
-        + y : float
+        + y : float 
         - {static} MARGIN : float
         + Position(x : float, y : float)
         + set(x : float, y : float) : void
@@ -80,20 +113,17 @@ package "fr.ul.acl.model" {
     class Plateau {
         - largeur : int
         - hauteur : int
-        - sortie : Point
         - grid : Block[][]
         + Plateau(largeur : int, hauteur : int)
+        + BlockEffects(damage : int, destination : Point, exit : boolean) : record
         + isInsideMap(p : Position) : boolean
         + getBlockType(x : int, y : int) : Block.Type
+        + getBlockTrigger(x : int, y : int) : Trigger
         + isFree(p : Position) : boolean
-        + portalActive(p : Position) : Point
-        + trapDamage(p : Position) : int
+        + interact(p : Position) : BlockEffects
         + setBlock(x : int, y : int, block : Block) : void
         + getLargeur() : int
         + getHauteur() : int
-        + setSortie(sortie : Point) : void
-        + getSortie() : Point
-        + arriveSortie(p : Position) : boolean
     }
 
     class HachimiGame {
@@ -159,9 +189,17 @@ package "fr.ul.acl.model" {
         - {static} TAILLE_CASE : int
         - game : HachimiGame
         - images : Map<String,Image>
+        - heroAnimations : Map<String,Image>
         + HachimiPainter(game : HachimiGame)
         - loadImage(name : String, filename : String) : void
+        - loadHeroAnimation(name : String, filename : String) : void
         + draw(im : BufferedImage) : void
+        - drawHero(crayon : Graphics2D) : void
+        - drawPlateau(crayon : Graphics2D) : void
+        - drawBackground(crayon : Graphics2D, w : int, h : int) : void
+        - drawEntity(crayon : Graphics2D, image : Image, e : Entity) : void
+        - drawBlock(crayon : Graphics2D, image : Image, x : int, y : int) : void
+        - drawUnit(crayon : Graphics2D, image : Image, x : int, y : int) : void
         + getWidth() : int
         + getHeight() : int
         - drawHealthBar(g2 : Graphics2D, hero : Hero) : void
@@ -191,9 +229,16 @@ package "fr.ul.acl.model" {
     }
 }
 
+' Trigger relationships
+Block *-- "0..1" Trigger : trigger
+MapReader ..> Tresor : creates
+MapReader ..> Lever : creates
+
 ' Inheritance
 Hero --|> Entity
 Monstre --|> Entity
+Tresor --|> Trigger
+Lever --|> Trigger
 
 ' Interface implementation
 HachimiGame ..|> Game

@@ -74,20 +74,24 @@ public class HachimiGame implements Game {
 
 		Position pos = hero.getNewPos();
 
-		if (plateau.isFree(pos))
-			hero.move();
-		else
+		if (!plateau.isFree(pos))
 			return hero.getPos();
 
-		hero.takeDamage(plateau.trapDamage(pos));
-
-		Point des = plateau.portalActive(pos);
-		if(des != null)
-			hero.teleport(des.x, des.y);
+		hero.move();
 		
-		if (plateau.arriveSortie(pos)){
+		Plateau.BlockEffects effects = plateau.interact(pos);
+
+		hero.takeDamage(effects.damage());
+
+		if (effects.exit()) {
 			won = true;
 			elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
+		}
+
+		Point des = effects.destination();
+
+		if (des != null) {
+			hero.teleport(des.x, des.y);
 		}
 
 		return pos;
