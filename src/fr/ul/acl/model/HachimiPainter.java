@@ -29,6 +29,7 @@ public class HachimiPainter implements GamePainter {
 	private HachimiGame game;
 	
 	private Map<String, Image> images = new HashMap<>();
+	private Map<String, Image> heroAnimations = new HashMap<>();
 
 	private void loadImage(String name, String filename) {
 		URL url = getClass().getResource("/" + filename);
@@ -40,6 +41,15 @@ public class HachimiPainter implements GamePainter {
 		images.put(name, new ImageIcon(url).getImage());
 	}
 
+	private void loadHeroAnimation(String name, String filename) {
+		URL url = getClass().getResource("/hero/" + filename);
+
+		if (url == null) {
+			throw new IllegalStateException(filename + " not found!");
+		}
+
+		heroAnimations.put(name, new ImageIcon(url).getImage());
+	}
 	/**
 	 * appelle constructeur parent
 	 * 
@@ -50,13 +60,22 @@ public class HachimiPainter implements GamePainter {
 		this.game = game;
 
 		loadImage("background", "background.jpg");
-    	loadImage("hero", "cat.gif");
-		loadImage("wall", "wall.png");
-		loadImage("sortie", "sortie.png");
-		loadImage("trap", "trap.png");
-		loadImage("portal", "portal.gif");
-		loadImage("zombie", "zombie.gif");
-		loadImage("ghost", "ghost.gif");
+		loadImage("wall", "texture/rock.png");
+		loadImage("exit", "exit.gif");
+		loadImage("trap", "texture/trap.gif");
+		loadImage("portal", "texture/portal.gif");
+		loadImage("zombie", "ennemy/zombie.gif");
+		loadImage("ghost", "ennemy/ghost.gif");
+
+		String[] directions = {"back", "front", "left", "right"};
+		String[] states = {"idle", "walk", "hurt"};
+
+		for (String direction : directions) {
+			for (String state : states) {
+				String animation = state + "_" + direction;
+				loadHeroAnimation(animation, animation + ".gif");
+			}
+		}
 	}
 
 	/**
@@ -65,68 +84,83 @@ public class HachimiPainter implements GamePainter {
 	@Override
 	public void draw(BufferedImage im) {
 		Graphics2D crayon = (Graphics2D) im.getGraphics();
-		crayon.drawImage(
-			images.get("background"),
-			0, 0,
-			im.getWidth(), im.getHeight(),
-			null
-		);
+		drawBackground(crayon, im.getWidth(), im.getHeight());
 
-		for (int y = 0; y < game.getPlateau().getHauteur(); y++) {
-			for (int x = 0; x < game.getPlateau().getLargeur(); x++) {
-				// String image = null;
-				// switch (blockType) {
-				// 	case WALL: image = "wall"; break;
-				// 	case TRAP: image = "trap"; break;
-				// 	case PORTAL: image = "portal";break;
-				// 	case EMPTY:break;
-				// }
-				String image = switch (game.getPlateau().getBlockType(x, y)) {
-					case WALL -> "wall";
-					case TRAP -> "trap";
-					case PORTAL -> "portal";
-					case EMPTY -> null;
-				};
-
-				if (image != null) {
-					crayon.drawImage(
-						images.get(image),
-						x * TAILLE_CASE,
-						y * TAILLE_CASE,
-						TAILLE_CASE,
-						TAILLE_CASE,
-						null
-					);
-				}
-			}
-		}
-
+		drawPlateau(crayon);
+		
 		for (Monstre m : game.getMonstres()) {
-			crayon.drawImage(
-				images.get(m.isIntangible() ? "ghost" : "zombie"),
-				(int)(m.getPos().x * TAILLE_CASE),
-				(int)(m.getPos().y * TAILLE_CASE),
-				TAILLE_CASE,
-				TAILLE_CASE,
-				null
-			);
+			drawEntity(crayon, images.get(m.isIntangible() ? "ghost" : "zombie"), m);
 		}
 
-		crayon.drawImage(
-			images.get("hero"),
-			(int)(game.getHero().getPos().x * TAILLE_CASE),
-			(int)(game.getHero().getPos().y * TAILLE_CASE),
-			TAILLE_CASE,
-			TAILLE_CASE,
-			null
-		);
+		drawHero(crayon);
 
 		drawHealthBar(crayon, game.getHero());
+	}
 
+	private void drawHero(Graphics2D crayon){
+		Hero hero = game.getHero();
+		String animation = hero.getAnimationState() + "_" + hero.getAnimationDirection();
+		drawEntity(crayon, heroAnimations.get(animation), hero);
+	}
+
+	private void drawPlateau(Graphics2D crayon){
+		Plateau p = game.getPlateau();
+		for (int y = 0; y < p.getHauteur(); y++) {
+			for (int x = 0; x < p.getLargeur(); x++) {
+				String image = null;
+				switch (blockType) {
+					case WALL: image = "wall"; break;
+					case TRAP: image = "trap"; break;
+					case PORTAL: image = "portal";break;
+					case TRIGGER : image = "";break;
+					case EMPTY:break;
+				}
+				// String image = switch (p.getBlockType(x, y)) {
+				// 	case WALL -> "wall";
+				// 	case TRAP -> "trap";
+				// 	case PORTAL -> "portal";
+				// 	case EXIT -> "exit";
+				// 	case TRIGGER -> "";
+				// 	case EMPTY -> null;
+				// };
+
+				if (image == null) 
+					continue;
+				else if(image.isEmpty())
+					drawBlock(crayon,p.getBlockTrigger(x, y).getImage(),x,y);
+				else
+					drawBlock(crayon,images.get(image),x,y);
+			}
+		}
+	}
+
+	private void drawBackground(Graphics2D crayon, int w, int h){
 		crayon.drawImage(
-			images.get("sortie"),
-			game.getPlateau().getSortie().x * TAILLE_CASE,
-			game.getPlateau().getSortie().y * TAILLE_CASE,
+			images.get("background"),
+			0, 0, w, h,
+			null
+		);
+	}
+
+
+	private void drawEntity(Graphics2D crayon, Image image, Entity e){
+		drawUnit(
+			crayon, image, 
+			(int)(e.getPos().x * TAILLE_CASE),
+			(int)(e.getPos().y * TAILLE_CASE)
+		);
+	}
+	private void drawBlock(Graphics2D crayon, Image image, int x, int y){
+		drawUnit(
+			crayon, image, 
+			x * TAILLE_CASE,
+			y * TAILLE_CASE
+		);
+	}
+
+	private void drawUnit(Graphics2D crayon, Image image, int x, int y){
+		crayon.drawImage(
+			image,x,y,
 			TAILLE_CASE,
 			TAILLE_CASE,
 			null

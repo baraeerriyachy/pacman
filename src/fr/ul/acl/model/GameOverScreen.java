@@ -4,11 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 
 public class GameOverScreen extends JFrame {
+    private ImageIcon dyingAnimation;
 
     public GameOverScreen(
             boolean won,
             long elapsedSeconds,
             Runnable restartAction) {
+
+        dyingAnimation = new ImageIcon(
+            getClass().getResource("/hero/dying.gif")
+        );
 
         setTitle(won ? "Hachimi - Victory!" : "Hachimi - Game Over");
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -33,6 +38,11 @@ public class GameOverScreen extends JFrame {
             timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
             add(timeLabel, BorderLayout.CENTER);
         }
+        else{
+            JLabel heroLabel = new JLabel(dyingAnimation);
+            heroLabel.setPreferredSize(new Dimension(20, 20));
+            add(heroLabel);
+        }
 
         // Restart button
         JButton restartButton = new JButton("Restart");
@@ -52,7 +62,7 @@ public class GameOverScreen extends JFrame {
         add(title, BorderLayout.NORTH);
         add(bottom, BorderLayout.SOUTH);
 
-        setSize(400, 180);
+        setSize(400, 250);
         setLocationRelativeTo(null);
         setResizable(false);
     }

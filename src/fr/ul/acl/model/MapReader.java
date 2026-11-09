@@ -71,6 +71,12 @@ public class MapReader {
                         case 'T':
                             plateau.setBlock(x, y, Block.trap(20));
                             break;
+                        case 'C':
+                            plateau.setBlock(x, y, Block.trigger(new Tresor()));
+                            break;
+                        case 'L':
+                            plateau.setBlock(x, y, Block.trigger(new Lever()));
+                            break;
                         case 'P':
                             portalEntrance = new Point(x, y);
                             break;
@@ -80,12 +86,7 @@ public class MapReader {
                             break;
                         
                         case 'S':
-                            if (plateau.getSortie() != null) {
-                                throw new IOException(
-                                    "Plusieurs positions S trouvées."
-                                );
-                            }
-                            plateau.setSortie(new Point(x, y));
+                            plateau.setBlock(x, y, Block.exit());
                             break;
 
                         case 'H':
@@ -109,9 +110,9 @@ public class MapReader {
                 throw new IOException("Position H introuvable.");
             }
 
-            if (plateau.getSortie() == null) {
-                throw new IOException("Aucune sortie S trouvée.");
-            }
+            // if (plateau.getSortie() == null) {
+            //     throw new IOException("Aucune sortie S trouvée.");
+            // }
             
             if (portalEntrance != null && portalDestination != null) {
                 plateau.setBlock(

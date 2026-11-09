@@ -4,10 +4,10 @@ import java.util.*;
 import java.awt.Point;
 
 public class Plateau {
-
+    public record BlockEffects(int damage, Point destination, boolean exit) {}
+	
     private final int largeur;
     private final int hauteur;
-    private Point sortie;
     private final Block[][] grid;
 
     public Plateau(int largeur, int hauteur) {
@@ -39,42 +39,61 @@ public class Plateau {
         return grid[x][y].getType();
     }
 
+    public Trigger getBlockTrigger(int x, int y){
+        return grid[x][y].getTrigger();
+    }
+
     public boolean isFree(Position p) {
         if(!isInsideMap(p))
-        {
-            // System.out.println(
-			// 	"Déplacement impossible : hors limites."
-			// );
             return false;
-		}
 
         for (int x = p.xPrev(); x <= p.xNext(); x++) {
             for (int y = p.yPrev(); y <= p.yNext(); y++) {
-                if (grid[x][y].getType() == Block.Type.WALL) {
-                    // System.out.println(
-                    //     "Déplacement impossible : obstacle."
-                    // );
+                if (grid[x][y].getType() == Block.Type.WALL)
                     return false;
-                }
             }
         }
 
         return true;
     }
 
-    public Point portalActive(Position p){
-        Point destination = grid[p.xNext()][p.yNext()].getDestination();
-        if (destination == null) {
-            destination = grid[p.xPrev()][p.yPrev()].getDestination();
-        }
-        return destination;
-    }
+    public BlockEffects interact(Position p) {
+        int damage = 0;
+        Point destination = null;
+        boolean exit = false;
 
-    public int trapDamage(Position p){
-        return Math.max(
-            grid[p.xNext()][p.yNext()].getDamage(),
-            grid[p.xPrev()][p.yPrev()].getDamage()
-        );
+        for (int x = p.xPrev(); x <= p.xNext(); x++) {
+            for (int y = p.yPrev(); y <= p.yNext(); y++) {
+
+                Block block = grid[x][y];
+
+                switch (block.getType()) {
+
+                    case TRAP:
+                        damage = Math.max(damage, block.getDamage());
+                        break;
+
+                    case PORTAL:
+                        if (block.getDestination() != null) {
+                            destination = block.getDestination();
+                        }
+                        break;
+
+                    case TRIGGER:
+                        block.getTrigger().activate();
+                        break;
+
+                    case EXIT:
+                        exit = true;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return new BlockEffects(damage, destination, exit);
     }
 
     public void setBlock(int x, int y, Block block) {
@@ -87,17 +106,5 @@ public class Plateau {
 
     public int getHauteur() {
         return hauteur;
-    }
-
-    public void setSortie(Point sortie) {
-        this.sortie = sortie;
-    }
-
-    public Point getSortie() {
-        return sortie;
-    }
-
-    public boolean arriveSortie(Position p) {
-        return (int)p.x == sortie.x && (int)p.y == sortie.y ;
     }
 }

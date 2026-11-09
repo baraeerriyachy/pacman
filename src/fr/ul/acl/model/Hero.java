@@ -7,11 +7,40 @@ public class Hero extends Entity {
 
     private int healthPoints;
     private long lastDamageTime;
+    private String animationDirection = "front";
+    private String animationState = "idle";
 
     public Hero(float x, float y) {
         super(x, y);
         this.healthPoints = MAX_HP;
         this.lastDamageTime = 0;
+    }
+
+    public String getAnimationState() {
+        return animationState;
+    }
+
+    public String getAnimationDirection() {
+        if (direction.x == 1) animationDirection = "right";
+        else if (direction.x == -1) animationDirection = "left";
+        else if (direction.y == 1) animationDirection = "front";
+        else if (direction.y == -1) animationDirection = "back";
+
+        return animationDirection;
+    }
+
+    @Override
+    public void setDirection(int dx, int dy) {
+        super.setDirection(dx, dy);
+
+        if (animationState.equals("hurt")) {
+            if(System.currentTimeMillis() - lastDamageTime < INVULNERABILITY_DURATION / 2)
+                return;
+        }
+
+        animationState = (dx == 0 && dy == 0)
+            ? "idle"
+            : "walk";
     }
 
     public int getHealthPoints() {
@@ -41,6 +70,8 @@ public class Hero extends Entity {
 
         healthPoints = Math.max(0, healthPoints - damage);
         lastDamageTime = currentTime;
+
+        animationState = "hurt";
 
         return true;
     }
