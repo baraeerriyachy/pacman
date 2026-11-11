@@ -12,6 +12,7 @@ import java.util.List;
 
 public class MapReader {
 
+    private final List<Monstre> monstres = new ArrayList<>();
     private Plateau plateau;
     private Point depart;
 
@@ -41,6 +42,8 @@ public class MapReader {
             int largeur = lignes.get(0).length();
 
             plateau = new Plateau(largeur, hauteur);
+            Point portalEntrance = null;
+            Point portalDestination = null;
 
             for (int y = 0; y < hauteur; y++) {
                 ligne = lignes.get(y);
@@ -57,16 +60,33 @@ public class MapReader {
                             break;
 
                         case '1':
-                            plateau.ajouterObstacle(x, y);
+                            plateau.setBlock(x, y, Block.wall());
+                            break;
+                        case 'Z':
+                            monstres.add(Monstre.zombie(x,y));
+                            break;
+                        case 'F':
+                            monstres.add(Monstre.ghost(x,y));
+                            break;
+                        case 'T':
+                            plateau.setBlock(x, y, Block.trap(20));
+                            break;
+                        case 'C':
+                            plateau.setBlock(x, y, Block.trigger(new Tresor()));
+                            break;
+                        case 'L':
+                            plateau.setBlock(x, y, Block.trigger(new Lever()));
+                            break;
+                        case 'P':
+                            portalEntrance = new Point(x, y);
+                            break;
+
+                        case 'D':
+                            portalDestination = new Point(x, y);
                             break;
                         
                         case 'S':
-                            if (plateau.getSortie() != null) {
-                                throw new IOException(
-                                    "Plusieurs positions S trouvées."
-                                );
-                            }
-                            plateau.setSortie(new Point(x, y));
+                            plateau.setBlock(x, y, Block.exit());
                             break;
 
                         case 'H':
@@ -90,8 +110,16 @@ public class MapReader {
                 throw new IOException("Position H introuvable.");
             }
 
-            if (plateau.getSortie() == null) {
-                throw new IOException("Aucune sortie S trouvée.");
+            // if (plateau.getSortie() == null) {
+            //     throw new IOException("Aucune sortie S trouvée.");
+            // }
+            
+            if (portalEntrance != null && portalDestination != null) {
+                plateau.setBlock(
+                    (int) portalEntrance.x,
+                    (int) portalEntrance.y,
+                    Block.portal(portalDestination)
+                );
             }
         }
     }
@@ -103,4 +131,9 @@ public class MapReader {
     public Point getDepart() {
         return depart;
     }
+
+    public List<Monstre> getMonstres(){
+        return monstres;
+    }
+
 }

@@ -1,16 +1,14 @@
-
 package fr.ul.acl.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.awt.Point;
 
 public class Plateau {
-
+    public record BlockEffects(int damage, Point destination, boolean exit) {}
+	
     private final int largeur;
     private final int hauteur;
-    private final List<Obstacle> obstacles = new ArrayList<>();
-    private Point sortie;
+    private final Block[][] grid;
 
     public Plateau(int largeur, int hauteur) {
         if (largeur <= 0 || hauteur <= 0) {
@@ -21,43 +19,86 @@ public class Plateau {
 
         this.largeur = largeur;
         this.hauteur = hauteur;
-    }
+        this.grid = new Block[largeur][hauteur];
 
-    public boolean estDansLimites(float x, float y) {
-        return x >= 0 && x + 1 <= largeur
-        && y >= 0 && y + 1 <= hauteur;
-    }
-
-    public boolean estObstacle(int x, int y) {
-        for (Obstacle obstacle : obstacles) {
-            if (obstacle.getX() == x && obstacle.getY() == y) {
-                return true;
+        // Initialise every cell as EMPTY
+        for (int x = 0; x < largeur; x++) {
+            for (int y = 0; y < hauteur; y++) {
+                grid[x][y] = Block.EMPTY;
             }
         }
-        return false;
+        
+    } 
+
+    public boolean isInsideMap(Position p) {
+        return p.x >= 0 && p.x + 1 <= largeur
+        && p.y >= 0 && p.y + 1 <= hauteur;
     }
 
-    public boolean peut_passer(float x, float y) {
-    for (Obstacle obstacle : obstacles) {
-        if (x < obstacle.getX() + 1
-            && x + 1 > obstacle.getX()
-            && y < obstacle.getY() + 1
-            && y + 1 > obstacle.getY()) {
-            return false;
-        }
+    public Block.Type getBlockType(int x, int y){
+        return grid[x][y].getType();
     }
-    return true;
-}
 
-    public boolean ajouterObstacle(int x, int y) {
-        if (!estDansLimites(x, y) || estObstacle(x, y)) {
+    public Trigger getBlockTrigger(int x, int y){
+        return grid[x][y].getTrigger();
+    }
+
+    public boolean isFree(Position p) {
+        if(!isInsideMap(p))
             return false;
+
+        for (int x = p.xPrev(); x <= p.xNext(); x++) {
+            for (int y = p.yPrev(); y <= p.yNext(); y++) {
+                if (grid[x][y].getType() == Block.Type.WALL)
+                    return false;
+            }
         }
 
-        obstacles.add(new Obstacle(x, y));
         return true;
     }
 
+    public BlockEffects interact(Position p) {
+        int damage = 0;
+        Point destination = null;
+        boolean exit = false;
+
+        for (int x = p.xPrev(); x <= p.xNext(); x++) {
+            for (int y = p.yPrev(); y <= p.yNext(); y++) {
+
+                Block block = grid[x][y];
+
+                switch (block.getType()) {
+
+                    case TRAP:
+                        damage = Math.max(damage, block.getDamage());
+                        break;
+
+                    case PORTAL:
+                        if (block.getDestination() != null) {
+                            destination = block.getDestination();
+                        }
+                        break;
+
+                    case TRIGGER:
+                        block.getTrigger().activate();
+                        break;
+
+                    case EXIT:
+                        exit = true;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return new BlockEffects(damage, destination, exit);
+    }
+
+    public void setBlock(int x, int y, Block block) {
+        grid[x][y] = block;
+    }
 
     public int getLargeur() {
         return largeur;
@@ -65,17 +106,5 @@ public class Plateau {
 
     public int getHauteur() {
         return hauteur;
-    }
-
-    public void setSortie(Point sortie) {
-        this.sortie = sortie;
-    }
-
-    public Point getSortie() {
-        return sortie;
-    }
-
-    public boolean arriveSortie(int x, int y) {
-        return x == sortie.x && y == sortie.y ;
     }
 }

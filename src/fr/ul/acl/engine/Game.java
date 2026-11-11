@@ -22,4 +22,6 @@ public interface Game {
 	public boolean isFinished();
 
 	public long getElapsedSeconds();
+
+	public boolean hasWon();
 }

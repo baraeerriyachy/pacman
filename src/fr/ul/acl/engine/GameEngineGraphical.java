@@ -2,7 +2,7 @@
 package fr.ul.acl.engine;
 
 import javax.swing.SwingUtilities;
-import fr.ul.acl.model.WinScreen;
+import fr.ul.acl.model.GameOverScreen;
 import fr.ul.acl.model.HachimiGame;
 import fr.ul.acl.model.HachimiController;
 
@@ -10,10 +10,11 @@ import java.io.IOException;
 
 public class GameEngineGraphical {
 
-    private Game game;
+    private Game game; 
     private GamePainter gamePainter;
     private GameController gameController;
     private GraphicalInterface gui;
+    private Thread gameThread;
 
     public GameEngineGraphical(
             Game game,
@@ -25,16 +26,29 @@ public class GameEngineGraphical {
         this.gameController = gameController;
     }
 
+    private void startGameThread() {
+        gameThread = new Thread(() -> {
+            try {
+                playGame();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        gameThread.start();
+    }
+
     public void run() throws InterruptedException {
 
         // Création de l'interface graphique
         this.gui = new GraphicalInterface(
             this.gamePainter,
-            this.gameController
+            this.gameController,
+            this::restartGame
         );
 
         // Lancement de la première partie
-        playGame();
+        startGameThread();
     }
 
     private void playGame() throws InterruptedException {
@@ -52,7 +66,8 @@ public class GameEngineGraphical {
 
         // Affichage de la fenêtre de victoire
         SwingUtilities.invokeLater(() -> {
-            new WinScreen(
+            new GameOverScreen(
+                game.hasWon(),
                 game.getElapsedSeconds(),
                 this::restartGame
             ).setVisible(true);
@@ -60,25 +75,21 @@ public class GameEngineGraphical {
     }
 
     private void restartGame() {
-
         try {
-            // Réinitialisation du jeu
+            // Stop the previous game loop
+            if (gameThread != null) {
+                gameThread.interrupt();
+            }
+
+            // Reset game state
             ((HachimiGame) game).recommencer();
-            
-            // reinitialisation de la commande du jeu 
             ((HachimiController) gameController).resetCommand();
-            
 
-            // Relancement de la boucle dans un nouveau thread
-            Thread gameThread = new Thread(() -> {
-                try {
-                    playGame();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            });
+            // Refresh display
+            gui.paint();
 
-            gameThread.start();
+            // Start a fresh game loop
+            startGameThread();
 
         } catch (IOException e) {
             e.printStackTrace();
