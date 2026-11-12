@@ -29,7 +29,7 @@ public class HachimiPainter implements GamePainter {
 	private HachimiGame game;
 	
 	private Map<String, Image> images = new HashMap<>();
-	private Map<String, Image> heroAnimations = new HashMap<>();
+	private Map<String, VisualEffect> visuals = new HashMap<>();
 
 	private void loadImage(String name, String filename) {
 		URL url = getClass().getResource("/" + filename);
@@ -39,16 +39,6 @@ public class HachimiPainter implements GamePainter {
 		}
 
 		images.put(name, new ImageIcon(url).getImage());
-	}
-
-	private void loadHeroAnimation(String name, String filename) {
-		URL url = getClass().getResource("/hero/" + filename);
-
-		if (url == null) {
-			throw new IllegalStateException(filename + " not found!");
-		}
-
-		heroAnimations.put(name, new ImageIcon(url).getImage());
 	}
 	/**
 	 * appelle constructeur parent
@@ -67,13 +57,19 @@ public class HachimiPainter implements GamePainter {
 		loadImage("zombie", "ennemy/zombie.gif");
 		loadImage("ghost", "ennemy/ghost.gif");
 
+		String[] effectNames = {"lightning", "explosion"};
+
+		for (String name : effectNames) {
+			visuals.put(name, new VisualEffect("effect/" + name + ".gif"));
+		}
+
 		String[] directions = {"back", "front", "left", "right"};
 		String[] states = {"idle", "walk", "hurt"};
 
 		for (String direction : directions) {
 			for (String state : states) {
 				String animation = state + "_" + direction;
-				loadHeroAnimation(animation, animation + ".gif");
+				loadImage(animation, "hero/" + animation + ".gif");
 			}
 		}
 	}
@@ -95,12 +91,55 @@ public class HachimiPainter implements GamePainter {
 		drawHero(crayon);
 
 		drawHealthBar(crayon, game.getHero());
+
+		drawMessage(crayon);
+
+		drawEffect(crayon);
+	}
+
+	private void drawEffect(Graphics2D crayon){
+		String effectName = game.getVisualEffect();
+		if(effectName.isEmpty())
+			return;
+		
+		VisualEffect visual = visuals.get(effectName);
+		BufferedImage beam = visual.getCurrentFrame();
+		int width = 3 * TAILLE_CASE;
+		int height = (int) (beam.getHeight() * (width / (double) beam.getWidth()));
+
+		crayon.drawImage(
+			beam,
+			(game.getHero().getPos().xPrev() - 1) * TAILLE_CASE,
+			(game.getHero().getPos().yPrev() + 2) * TAILLE_CASE - height,
+			width,
+			height,
+			null
+		);
+
+		if(visual.isFinished()){
+			visual.reset();
+			game.unsetVisual();
+		}
+
+		visual.nextFrame();
+	}
+
+	private void drawMessage(Graphics2D crayon){
+		crayon.setFont(new Font("Arial", Font.BOLD, 18));
+		if (!game.getMessage().isEmpty()) {
+			crayon.setColor(Color.WHITE);
+			crayon.drawString(
+				game.getMessage(),
+				20,
+				getHeight() - 20
+			);
+		}
 	}
 
 	private void drawHero(Graphics2D crayon){
 		Hero hero = game.getHero();
 		String animation = hero.getAnimationState() + "_" + hero.getAnimationDirection();
-		drawEntity(crayon, heroAnimations.get(animation), hero);
+		drawEntity(crayon, images.get(animation), hero);
 	}
 
 	private void drawPlateau(Graphics2D crayon){

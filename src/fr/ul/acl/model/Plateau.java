@@ -4,11 +4,10 @@ import java.util.*;
 import java.awt.Point;
 
 public class Plateau {
-    public record BlockEffects(int damage, Point destination, boolean exit) {}
-	
     private final int largeur;
     private final int hauteur;
     private final Block[][] grid;
+    private boolean interacable;
 
     public Plateau(int largeur, int hauteur) {
         if (largeur <= 0 || hauteur <= 0) {
@@ -44,9 +43,6 @@ public class Plateau {
     }
 
     public boolean isFree(Position p) {
-        if(!isInsideMap(p))
-            return false;
-
         for (int x = p.xPrev(); x <= p.xNext(); x++) {
             for (int y = p.yPrev(); y <= p.yNext(); y++) {
                 if (grid[x][y].getType() == Block.Type.WALL)
@@ -61,6 +57,8 @@ public class Plateau {
         int damage = 0;
         Point destination = null;
         boolean exit = false;
+        Trigger trigger = null;
+        interacable = true;
 
         for (int x = p.xPrev(); x <= p.xNext(); x++) {
             for (int y = p.yPrev(); y <= p.yNext(); y++) {
@@ -71,6 +69,7 @@ public class Plateau {
 
                     case TRAP:
                         damage = Math.max(damage, block.getDamage());
+                        interacable = false;
                         break;
 
                     case PORTAL:
@@ -80,7 +79,8 @@ public class Plateau {
                         break;
 
                     case TRIGGER:
-                        block.getTrigger().activate();
+                        trigger = block.getTrigger();
+                        interacable = !trigger.isActivated();
                         break;
 
                     case EXIT:
@@ -88,12 +88,13 @@ public class Plateau {
                         break;
 
                     default:
+                        interacable = false;
                         break;
                 }
             }
         }
 
-        return new BlockEffects(damage, destination, exit);
+        return new BlockEffects(damage, destination, exit, trigger);
     }
 
     public void setBlock(int x, int y, Block block) {
@@ -106,5 +107,9 @@ public class Plateau {
 
     public int getHauteur() {
         return hauteur;
+    }
+
+    public boolean isInteracable(){
+        return interacable;
     }
 }

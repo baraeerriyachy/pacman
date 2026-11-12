@@ -4,15 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 
 public class GameOverScreen extends JFrame {
-    private ImageIcon dyingAnimation;
 
     public GameOverScreen(
             boolean won,
-            long elapsedSeconds,
             Runnable restartAction) {
 
-        dyingAnimation = new ImageIcon(
-            getClass().getResource("/hero/dying.gif")
+        ImageIcon animation = new ImageIcon(
+            getClass().getResource(won ? "/victory.gif" : "/lose.gif")
         );
 
         setTitle(won ? "Hachimi - Victory!" : "Hachimi - Game Over");
@@ -26,23 +24,9 @@ public class GameOverScreen extends JFrame {
         );
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
 
-        // Elapsed time
-        if(won){
-            long minutes = elapsedSeconds / 60;
-            long seconds = elapsedSeconds % 60;
-
-            JLabel timeLabel = new JLabel(
-                String.format("Time: %02d:%02d", minutes, seconds),
-                SwingConstants.CENTER
-            );
-            timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
-            add(timeLabel, BorderLayout.CENTER);
-        }
-        else{
-            JLabel heroLabel = new JLabel(dyingAnimation);
-            heroLabel.setPreferredSize(new Dimension(20, 20));
-            add(heroLabel);
-        }
+        JLabel label = new JLabel(animation);
+        add(label);
+    
 
         // Restart button
         JButton restartButton = new JButton("Restart");
@@ -62,7 +46,7 @@ public class GameOverScreen extends JFrame {
         add(title, BorderLayout.NORTH);
         add(bottom, BorderLayout.SOUTH);
 
-        setSize(400, 250);
+        setSize(400, 300);
         setLocationRelativeTo(null);
         setResizable(false);
     }

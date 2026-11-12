@@ -6,6 +6,7 @@ import java.awt.*;
 import fr.ul.acl.model.HachimiController;
 import fr.ul.acl.model.MusicPlayer;
 import fr.ul.acl.model.OptionsMenu;
+import java.util.Map;
 
 public class GraphicalInterface {
 
@@ -15,7 +16,7 @@ public class GraphicalInterface {
     public GraphicalInterface(
             GamePainter gamePainter,
             GameController gameController,
-            Runnable restartAction) {
+            Map<String, Runnable> actions) {
 
         frame = new JFrame("Hachimi");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,10 +48,27 @@ public class GraphicalInterface {
 
         });
 
+        JButton stopButton = new JButton("Pause");
+        boolean[] stopped = {false};
+
+        stopButton.addActionListener(e -> {
+            stopped[0] = !stopped[0];
+
+            stopButton.setText(
+                stopped[0] ? "Reprendre" : "Pause"
+            );
+
+            actions.get("toggle_pause").run();
+
+            panel.requestFocusInWindow();
+        });
+
         JButton restartButton = new JButton("Recommencer");
 
         restartButton.addActionListener(e -> {
-            restartAction.run();
+            stopped[0] = false;
+            stopButton.setText("Pause");
+            actions.get("restart").run();
             panel.requestFocusInWindow();
         });
 
@@ -58,6 +76,7 @@ public class GraphicalInterface {
 		container.add(panel, BorderLayout.CENTER);
 
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.add(stopButton);
         bottomPanel.add(restartButton);
 		bottomPanel.add(optionsButton);
 

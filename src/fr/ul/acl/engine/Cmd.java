@@ -5,5 +5,5 @@ package fr.ul.acl.engine;
  *
  */
 public enum Cmd {
-	 LEFT,RIGHT,UP,DOWN,IDLE; 
+	 LEFT,RIGHT,UP,DOWN,IDLE,INTERACT; 
 }

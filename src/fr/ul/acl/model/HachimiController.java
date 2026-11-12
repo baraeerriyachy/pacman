@@ -97,6 +97,10 @@ public class HachimiController implements GameController {
             case KeyEvent.VK_D:
                 commandeEnCours = Cmd.RIGHT;
                 break;
+            
+            case KeyEvent.VK_SPACE:
+                commandeEnCours = Cmd.INTERACT;
+                break;
         }
     }
 

@@ -5,6 +5,7 @@ import javax.swing.SwingUtilities;
 import fr.ul.acl.model.GameOverScreen;
 import fr.ul.acl.model.HachimiGame;
 import fr.ul.acl.model.HachimiController;
+import java.util.Map;
 
 import java.io.IOException;
 
@@ -44,7 +45,10 @@ public class GameEngineGraphical {
         this.gui = new GraphicalInterface(
             this.gamePainter,
             this.gameController,
-            this::restartGame
+            Map.of(
+                "restart", this::restartGame,
+                "toggle_pause", ((HachimiGame)game)::toggleStopped
+            )
         );
 
         // Lancement de la première partie
@@ -68,9 +72,8 @@ public class GameEngineGraphical {
         SwingUtilities.invokeLater(() -> {
             new GameOverScreen(
                 game.hasWon(),
-                game.getElapsedSeconds(),
                 this::restartGame
-            ).setVisible(true);
+            ).setVisible(true); 
         });
     }
 
