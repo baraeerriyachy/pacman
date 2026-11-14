@@ -6,7 +6,11 @@ import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.util.List;
 
-import fr.ul.acl.model.*;
+import fr.ul.acl.model.HachimiGame;
+import fr.ul.acl.model.GameLevel;
+import fr.ul.acl.controller.HachimiController;
+import fr.ul.acl.view.HachimiPainter;
+import fr.ul.acl.view.GameOverScreen;
 
 public class GameEngineGraphical {
 

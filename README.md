@@ -1,77 +1,62 @@
-# Pacman - M1 ACL
+# Pacman - 2A ISN ACL
 
-Projet réalisé dans le cadre du module **Analyse et Conception de Logiciels (Master 1)** à l'Université de Lorraine. 
+Projet réalisé dans le cadre du module **Analyse et Conception de Logiciels** à l'INP Lorraine - ENSEM. 
 
-Ce projet consiste à développer une application Pacman en Java en appliquant les principes de conception orientée objet, le développement piloté par les tests (TDD) et la gestion de versions avec Git.
+Ce projet consiste à développer un jeu de type Pac-Man en Java, en mettant en pratique les principes de la programmation orientée objet, la conception logicielle avec UML, les tests logiciels, les méthodes Agiles, la gestion de versions avec Git et la configuration du processus de construction avec Maven.
 
 ---
 
 ## 📁 Structure du Projet
 
-Le projet suit la structure standard Maven[cite: 1] :
+Le projet suit une architecture inspirée du Modèle-vue-contrôleur avec la structure Maven suivante:
 
 ```text
-pacman/
-├── pom.xml
-├── README.md
-└── src/
-    ├── main/
-    │   └── java/
-    │       └── fr/
-    │           └── ul/
-    │               └── acl/
-    │                   ├── model/      # Modèle de données (Pacman, Fantômes, Grille, etc.)
-    │                   └── start/      # Point d'entrée de l'application (Main.java)
-    └── test/
-        └── java/
-            └── fr/
-                └── ul/
-                    └── acl/
-                        └── tests/      # Tests unitaires (JUnit)
-
-## Niveaux de difficulte
-
-Au lancement, le jeu propose trois cartes selectionnables :
-
-- **Niveau 1 - Facile** (`map.txt`) : carte initiale.
-- **Niveau 2 - Moyen** (`level2.txt`) : labyrinthe plus grand et plus dense.
-- **Niveau 3 - Difficile** (`level3.txt`) : carte la plus grande avec davantage de murs.
-
-Les cartes sont des fichiers texte : `H` indique le depart du heros, `S` la sortie,
-`1` un mur et `0` une case libre. Le bouton de recommencement recharge la carte
-du niveau choisi. Pour ajouter un niveau, ajouter son fichier dans
-`src/fr/ul/acl/resource/` puis l'enregistrer dans `GameLevel`.
+PACMAN
+└───src
+    └───fr
+        └───ul
+            └───acl
+                ├───model
+                ├───view
+                ├───controller
+                ├───engine
+                ├───resource
+                ├───start
+                └───tests
 
 
-# Guide de connection au projet 
+## Niveaux de difficulté
 
-#1. Prerequis 
+Au lancement, le joueur accède à un écran de sélection proposant trois difficultés : **Facile**, **Moyen** et **Difficile**.
 
+- **Facile** : labyrinthes adaptés à une première prise en main.
+- **Moyen** : labyrinthes plus grands et plus complexes, demandant davantage de réflexion.
+- **Difficile** : labyrinthes plus vastes et exigeants, avec davantage d'obstacles et de défis.
 
-Avant de commencer, assurez-vous d'avoir installé les outils suivants sur votre ordinateur :
+La progression se fait niveau par niveau et difficulté par difficulté : le joueur doit terminer une carte pour débloquer la suivante. Une fois tous les niveaux d'une difficulté terminés, la difficulté supérieure est débloquée.
 
------> Java JDK 17 ou supérieur : pour compiler et exécuter le programme.
------>  Git : pour récupérer le projet depuis GitHub.
------>  Apache Maven 3.9 ou supérieur : pour gérer les dépendances et compiler le projet.
+## Installation et exécution
 
+### Prérequis
 
+- **Java JDK 17** ou supérieur
+- **Apache Maven 3.9** ou supérieur
+- **Git**
 
-Pour vérifier que ces outils sont correctement installés, ouvrez un terminal et exécutez :
+### Lancement du projet
 
------> java -version
------> javac -version
------> git --version
------> mvn -version
+Cloner le dépôt :
 
-2. Exécution du jeu :
-
-Pour lancer le projet suivre ces instructions :
-recupérer  le  projet:  
+```bash
 git clone https://github.com/baraeerriyachy/pacman.git
+cd pacman
+```
 
-puis faire :
+Compiler le projet et lancer le jeu :
 
------> mvn clean compile
------> mvn exec:java 
+```bash
+mvn clean compile
+mvn exec:java
+```
 
 

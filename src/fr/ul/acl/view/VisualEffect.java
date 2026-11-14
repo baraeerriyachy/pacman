@@ -1,5 +1,5 @@
 
-package fr.ul.acl.model;
+package fr.ul.acl.view;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

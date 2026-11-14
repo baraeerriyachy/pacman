@@ -1,5 +1,5 @@
 
-package fr.ul.acl.model;
+package fr.ul.acl.view;
 
 import javax.swing.*;
 import java.awt.*;

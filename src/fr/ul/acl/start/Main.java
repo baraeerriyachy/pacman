@@ -4,8 +4,7 @@ package fr.ul.acl.start;
 import javax.swing.SwingUtilities;
 
 import fr.ul.acl.engine.GameEngineGraphical;
-import fr.ul.acl.model.HachimiController;
-import fr.ul.acl.model.MusicPlayer;
+import fr.ul.acl.controller.*;
 
 public class Main {
 

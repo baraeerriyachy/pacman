@@ -1,4 +1,4 @@
-package fr.ul.acl.model;
+package fr.ul.acl.view;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -13,18 +13,10 @@ import javax.swing.ImageIcon;
 import java.net.URL;
 
 import fr.ul.acl.engine.GamePainter;
+import fr.ul.acl.model.*;
 
-/**
- * @author Horatiu Cirstea, Vincent Thomas
- *
- * afficheur graphique pour le game
- * 
- */
 public class HachimiPainter implements GamePainter {
 
-	/**
-	 * la taille des cases
-	 */
 	private static final int TAILLE_CASE = 60;
 	private HachimiGame game;
 	

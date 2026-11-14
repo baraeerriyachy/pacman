@@ -1,10 +1,12 @@
 
-package fr.ul.acl.model;
+package fr.ul.acl.view;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
+
+import fr.ul.acl.model.GameLevel;
 
 public class LevelSelectionPanel extends JPanel {
 

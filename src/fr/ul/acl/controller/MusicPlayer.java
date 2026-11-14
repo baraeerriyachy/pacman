@@ -1,4 +1,4 @@
-package fr.ul.acl.model;
+package fr.ul.acl.controller;
 
 import javax.sound.sampled.*;
 import java.io.IOException;

@@ -6,7 +6,9 @@ import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-import fr.ul.acl.model.*;
+import fr.ul.acl.controller.*;
+import fr.ul.acl.view.*;
+import fr.ul.acl.model.GameLevel;
 
 public class GraphicalInterface {
 
