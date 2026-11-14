@@ -20,7 +20,6 @@ public class Main {
 
             GameEngineGraphical engine =
                     new GameEngineGraphical(
-                        "helpFileHachimi.txt",
                         controller
                     );
 

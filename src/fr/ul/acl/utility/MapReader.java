@@ -1,4 +1,4 @@
-package fr.ul.acl.map_tool;
+package fr.ul.acl.utility;
 
 import fr.ul.acl.model.*;
 
@@ -232,6 +232,10 @@ public class MapReader {
                         "Aucun portail correspondant à la destination DT" + id
                     );
                 }
+            }
+
+            for (Monstre m : monstres) {
+                MonsterInitialiser.initialize(m, plateau);
             }
         }
     }

@@ -1,4 +1,4 @@
-package fr.ul.acl.map_tool;
+package fr.ul.acl.utility;
 import java.util.Map;
 
 public final class Config {

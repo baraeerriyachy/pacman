@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import fr.ul.acl.controller.*;
 import fr.ul.acl.view.*;
 import fr.ul.acl.model.GameLevel;
+import fr.ul.acl.utility.HelpReader;
 
 public class GraphicalInterface {
 
@@ -25,7 +26,7 @@ public class GraphicalInterface {
 
     public GraphicalInterface(HachimiController controller) {
 
-    this.controller = controller;
+        this.controller = controller;
 
         frame = new JFrame("Hachimi");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -34,6 +35,29 @@ public class GraphicalInterface {
         cards = new JPanel(cardLayout);
 
         frame.setContentPane(cards);
+        HelpReader.loadHelp();
+    }
+
+    private void showHelp() {
+        JScrollPane help = HelpReader.helpPane;
+        help.setPreferredSize(new Dimension(650, 450));
+
+        if(help == null){
+            JOptionPane.showMessageDialog(
+                frame,
+                "Help is currently unavailable.",
+                "Help",
+                JOptionPane.WARNING_MESSAGE
+            );
+        }
+        else {
+            JOptionPane.showMessageDialog(
+                frame,
+                help,
+                "How to play Hachimi",
+                JOptionPane.INFORMATION_MESSAGE
+            );    
+        }
     }
 
     public void showLevelSelection(
@@ -71,6 +95,10 @@ public class GraphicalInterface {
 
         JPanel container = new JPanel(new BorderLayout());
         container.add(drawingPanel, BorderLayout.CENTER);
+
+        JButton help = new JButton("❔");
+        help.setToolTipText("Help");
+        help.addActionListener(e -> showHelp());
 
         JButton pause = new JButton("❚❚");
         pause.setToolTipText("Pause");
@@ -132,6 +160,7 @@ public class GraphicalInterface {
         buttons.add(restart);
         buttons.add(level);
         buttons.add(options);
+        buttons.add(help);
 
         bottom.add(levelLabel, BorderLayout.WEST);
         bottom.add(buttons, BorderLayout.EAST);

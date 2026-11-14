@@ -14,7 +14,6 @@ import fr.ul.acl.view.GameOverScreen;
 
 public class GameEngineGraphical {
 
-    private final String helpFile;
     private final HachimiController controller;
 
     private GraphicalInterface gui;
@@ -29,10 +28,8 @@ public class GameEngineGraphical {
             GameLevel.getAvailableLevels();
 
     public GameEngineGraphical(
-            String helpFile,
             HachimiController controller) {
 
-        this.helpFile = helpFile;
         this.controller = controller;
     }
 
@@ -52,7 +49,7 @@ public class GameEngineGraphical {
             try {
                 currentLevel = level;
 
-                game = new HachimiGame(helpFile, currentLevel);
+                game = new HachimiGame(currentLevel);
 
                 HachimiPainter painter = new HachimiPainter(game);
 
