@@ -9,48 +9,34 @@ public class Block {
     }
 
     private final Type type;
-    private final Point destination;
-    private final int damage;
-    private Trigger trigger;
+    private final BlockEffects effect;
 
-    private Block(Type type, Point destination, int damage) {
+    private Block(Type type, Point destination, int damage, Trigger trigger) {
         this.type = type;
-        this.destination = destination;
-        this.damage = damage;
-        this.trigger = null;
-    }
-
-    public void setTrigger(Trigger trigger){
-        this.trigger = trigger;
-    }
-
-    public Trigger getTrigger(){
-        return trigger;
+        this.effect = new BlockEffects(damage, destination, false, trigger);
     }
 
     public static final Block EMPTY =
-        new Block(Type.EMPTY, null, 0);
+        new Block(Type.EMPTY, null, 0, null);
 
     public static Block wall() {
-        return new Block(Type.WALL, null, 0);
+        return new Block(Type.WALL, null, 0, null);
     }
 
     public static Block exit() {
-        return new Block(Type.EXIT, null, 0);
+        return new Block(Type.EXIT, null, 0, null);
     }
 
     public static Block trap(int damage) {
-        return new Block(Type.TRAP, null, damage);
+        return new Block(Type.TRAP, null, damage, null);
     }
 
     public static Block portal(Point destination) {
-        return new Block(Type.PORTAL, destination, 0);
+        return new Block(Type.PORTAL, destination, 0, null);
     }
 
     public static Block trigger(Trigger trigger) {
-        Block b = new Block(Type.TRIGGER, null, 0);
-        b.setTrigger(trigger);
-        return b;
+        return new Block(Type.TRIGGER, null, 0, trigger);
     }
 
     public Type getType() {
@@ -58,10 +44,14 @@ public class Block {
     }
 
     public Point getDestination() {
-        return destination;
+        return effect.destination();
     }
 
     public int getDamage() {
-        return damage;
+        return effect.damage();
+    }
+
+    public Trigger getTrigger(){
+        return effect.trigger();
     }
 }

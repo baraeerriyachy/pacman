@@ -29,7 +29,18 @@ pacman/
                     └── acl/
                         └── tests/      # Tests unitaires (JUnit)
 
+## Niveaux de difficulte
 
+Au lancement, le jeu propose trois cartes selectionnables :
+
+- **Niveau 1 - Facile** (`map.txt`) : carte initiale.
+- **Niveau 2 - Moyen** (`level2.txt`) : labyrinthe plus grand et plus dense.
+- **Niveau 3 - Difficile** (`level3.txt`) : carte la plus grande avec davantage de murs.
+
+Les cartes sont des fichiers texte : `H` indique le depart du heros, `S` la sortie,
+`1` un mur et `0` une case libre. Le bouton de recommencement recharge la carte
+du niveau choisi. Pour ajouter un niveau, ajouter son fichier dans
+`src/fr/ul/acl/resource/` puis l'enregistrer dans `GameLevel`.
 
 
 # Guide de connection au projet 
@@ -39,7 +50,7 @@ pacman/
 
 Avant de commencer, assurez-vous d'avoir installé les outils suivants sur votre ordinateur :
 
- -----> Java JDK 17 ou supérieur : pour compiler et exécuter le programme.
+-----> Java JDK 17 ou supérieur : pour compiler et exécuter le programme.
 ----->  Git : pour récupérer le projet depuis GitHub.
 ----->  Apache Maven 3.9 ou supérieur : pour gérer les dépendances et compiler le projet.
 

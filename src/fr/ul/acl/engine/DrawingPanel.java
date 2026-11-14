@@ -1,14 +1,13 @@
 package fr.ul.acl.engine;
 
-/**
- * @author Horatiu Cirstea, Vincent Thomas
- *
- */
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
+
 
 public class DrawingPanel extends JPanel {
 
@@ -66,31 +65,30 @@ public class DrawingPanel extends JPanel {
 	 * nouvelle image vide sur laquelle dessiner
 	 */
 	public void drawGame() {
-		// generer la nouvelle image
-		this.painter.draw(this.nextImage);
+		painter.draw(nextImage);
 
-		// inverses les images doublebuffereing
-		BufferedImage temp = this.currentImage;
-		// l'image a dessiner est celle qu'on a construite
-		this.currentImage = this.nextImage;
-		// l'ancienne image est videe
-		this.nextImage = temp;
-		this.nextImage.getGraphics()
-				.fillRect(0, 0, this.width, this.height);
-		// met a jour l'image a afficher sur le panel
-		this.repaint();
+		BufferedImage temp = currentImage;
+		currentImage = nextImage;
+		nextImage = temp;
+
+		Graphics2D g = nextImage.createGraphics();
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 0, width, height);
+		g.dispose();
+
+		repaint();
 	}
 
-	/**
-	 * redefinit la methode paint consiste a dessiner l'image en cours
-	 * 
-	 * @param g
-	 *            graphics pour dessiner
-	 */
-	public void paint(Graphics g) {
-		super.paint(g);
-		g.drawImage(this.currentImage, 0, 0, getWidth(), getHeight(), 0, 0,
-				getWidth(), getHeight(), null);
-	}
 
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+
+		g.drawImage(
+			currentImage,
+			0, 0,
+			getWidth(), getHeight(),
+			null
+		);
+	}
 }

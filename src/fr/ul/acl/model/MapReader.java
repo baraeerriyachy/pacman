@@ -18,7 +18,7 @@ public class MapReader {
 
     public MapReader(String nomFichier) throws IOException {
         InputStream flux =
-            getClass().getResourceAsStream("/" + nomFichier);
+            getClass().getResourceAsStream("/map/" + nomFichier);
 
         if (flux == null) {
             throw new IOException("Carte introuvable : " + nomFichier);
@@ -109,10 +109,6 @@ public class MapReader {
             if (depart == null) {
                 throw new IOException("Position H introuvable.");
             }
-
-            // if (plateau.getSortie() == null) {
-            //     throw new IOException("Aucune sortie S trouvée.");
-            // }
             
             if (portalEntrance != null && portalDestination != null) {
                 plateau.setBlock(

@@ -15,13 +15,25 @@ public class HachimiGame implements Game {
 	private Plateau plateau;
     private Hero hero;
 	private boolean won;
-	private long startTime;
-	private long elapsedSeconds;
+    private final GameLevel level;
     private List<Monstre> monstres;
+	private BlockEffects effects;
+	private String message = "";
+	private String visualEffect = "";
+	private boolean stopped = false;
 
 	private final static int DEFAULT_MOVES = 3;
 	
 	public HachimiGame(String source) throws IOException {
+        this(source, GameLevel.getDefaultLevel());
+    }
+
+    /** Construit une partie sur le niveau choisi. */
+    public HachimiGame(String source, GameLevel level) throws IOException {
+        if (level == null) {
+            throw new IllegalArgumentException("Le niveau ne peut pas etre null.");
+        }
+        this.level = level;
 		BufferedReader helpReader;
 		try {
 			helpReader = new BufferedReader(new FileReader(source));
@@ -34,6 +46,7 @@ public class HachimiGame implements Game {
 			System.out.println("Help not available");
 		}
 
+		
 		recommencer();
 	}
 
@@ -44,6 +57,9 @@ public class HachimiGame implements Game {
 	 */
 	@Override
 	public void evolve(Cmd commande) {
+		if(stopped)
+			return;
+
 		Position pHero = evolveHero(commande);
 		for (Monstre m : monstres){
 			m.move();
@@ -67,6 +83,24 @@ public class HachimiGame implements Game {
 			case DOWN:
 				hero.setDirection(0, 1);
 				break; 
+			case INTERACT:
+
+				if (effects.exit()) {
+					won = true;
+				}
+
+				Point des = effects.destination();
+
+				if (des != null) {
+					visualEffect = "lightning";
+					stopped = true;
+				}
+
+				Trigger t = effects.trigger();
+				if (t != null) {
+					t.activate();
+				}
+			
 			case IDLE:
 				hero.setDirection(0, 0);
 				return hero.getPos();
@@ -74,25 +108,26 @@ public class HachimiGame implements Game {
 
 		Position pos = hero.getNewPos();
 
-		if (!plateau.isFree(pos))
+		if(!plateau.isInsideMap(pos)){
+			message = "You cannot leave the map.";
 			return hero.getPos();
+		}
+			
+
+		if (!plateau.isFree(pos)){
+			message = "An obstacle is blocking your way.";
+			return hero.getPos();
+		}
 
 		hero.move();
-		
-		Plateau.BlockEffects effects = plateau.interact(pos);
+
+		effects = plateau.interact(pos);
+		if(plateau.isInteracable())
+			message = "Press SPACE to interact";
+		else
+			message = "";
 
 		hero.takeDamage(effects.damage());
-
-		if (effects.exit()) {
-			won = true;
-			elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
-		}
-
-		Point des = effects.destination();
-
-		if (des != null) {
-			hero.teleport(des.x, des.y);
-		}
 
 		return pos;
 	}
@@ -105,6 +140,15 @@ public class HachimiGame implements Game {
 		return won || hero.isDead();
 	}
 
+	public GameLevel getLevel() {
+        return level;
+    }
+
+
+	public void toggleStopped(){
+		this.stopped = !stopped;
+	}
+
 	public Plateau getPlateau() {
 		return plateau;
 	}
@@ -113,14 +157,27 @@ public class HachimiGame implements Game {
 		return hero;
 	}
 
+	public String getMessage(){
+		return message;
+	}
+
+	public String getVisualEffect(){
+		return visualEffect;
+	}
+
+	public void unsetVisual(){
+		visualEffect = "";
+		message = "";
+		stopped = false;
+	
+		Point des = effects.destination();
+		if (des != null) 
+			hero.teleport(des.x, des.y);
+	}
+
 	public List<Monstre> getMonstres(){
         return monstres;
     } 
-	
-	@Override
-	public long getElapsedSeconds() {
-		return elapsedSeconds;
-	}
 
 	@Override
 	public boolean hasWon() {
@@ -128,7 +185,8 @@ public class HachimiGame implements Game {
 	}
 	
 	public void recommencer() throws IOException {
-	    MapReader lecteur = new MapReader("map.txt");
+
+	    MapReader lecteur = new MapReader(level.getMapFile());
 	    plateau = lecteur.getPlateau();
 
 	    Point depart = lecteur.getDepart();
@@ -138,8 +196,7 @@ public class HachimiGame implements Game {
 		initializeMonsterDirection();
 
 	    won = false;
-	    elapsedSeconds = 0;
-	    startTime = System.currentTimeMillis();
+		stopped = false;
 	}
 	
 	private int getMaxMove(Monstre m, Point direction) {

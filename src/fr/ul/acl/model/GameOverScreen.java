@@ -1,69 +1,73 @@
+
 package fr.ul.acl.model;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class GameOverScreen extends JFrame {
-    private ImageIcon dyingAnimation;
+public class GameOverScreen extends JPanel {
+
+    private static final Dimension BUTTON_SIZE =
+            new Dimension(160, 35);
 
     public GameOverScreen(
             boolean won,
-            long elapsedSeconds,
-            Runnable restartAction) {
+            boolean hasNextLevel,
+            Runnable retryAction,
+            Runnable nextLevelAction,
+            Runnable selectionAction,
+            Runnable quitAction) {
 
-        dyingAnimation = new ImageIcon(
-            getClass().getResource("/hero/dying.gif")
-        );
+        setLayout(new BorderLayout(15, 15));
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        setTitle(won ? "Hachimi - Victory!" : "Hachimi - Game Over");
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
-
-        // Ending message
         JLabel title = new JLabel(
-            won ? "Congratulations! You won!" : "Game Over! You lost!",
-            SwingConstants.CENTER
-        );
+                won ? "Congratulations! You won!" : "Game Over!",
+                SwingConstants.CENTER);
+
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
 
-        // Elapsed time
-        if(won){
-            long minutes = elapsedSeconds / 60;
-            long seconds = elapsedSeconds % 60;
+        ImageIcon animation = new ImageIcon(
+                getClass().getResource(
+                        won ? "/victory.gif" : "/lose.gif"));
 
-            JLabel timeLabel = new JLabel(
-                String.format("Time: %02d:%02d", minutes, seconds),
-                SwingConstants.CENTER
-            );
-            timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
-            add(timeLabel, BorderLayout.CENTER);
-        }
-        else{
-            JLabel heroLabel = new JLabel(dyingAnimation);
-            heroLabel.setPreferredSize(new Dimension(20, 20));
-            add(heroLabel);
-        }
+        JLabel image = new JLabel(animation, SwingConstants.CENTER);
 
-        // Restart button
-        JButton restartButton = new JButton("Restart");
-        restartButton.addActionListener(e -> {
-            dispose();
-            restartAction.run();
-        });
+        JPanel buttons = new JPanel(
+                new GridLayout(2, 2, 12, 10));
 
-        // Quit button
-        JButton closeButton = new JButton("Quit");
-        closeButton.addActionListener(e -> System.exit(0));
+        JButton retry = createButton("⟳", "Retry");
+        retry.addActionListener(e -> retryAction.run());
 
-        JPanel bottom = new JPanel();
-        bottom.add(restartButton);
-        bottom.add(closeButton);
+        JButton next = createButton("▶", "Next Level");
+        next.setEnabled(hasNextLevel);
+        next.addActionListener(e -> nextLevelAction.run());
+
+        JButton selection = createButton("⫶☰", "Level Selection");
+        selection.addActionListener(e -> selectionAction.run());
+
+        JButton quit = createButton("✖", "Quit");
+        quit.addActionListener(e -> quitAction.run());
+
+        buttons.add(retry);
+        buttons.add(next);
+        buttons.add(selection);
+        buttons.add(quit);
 
         add(title, BorderLayout.NORTH);
-        add(bottom, BorderLayout.SOUTH);
+        add(image, BorderLayout.CENTER);
+        add(buttons, BorderLayout.SOUTH);
+    }
 
-        setSize(400, 250);
-        setLocationRelativeTo(null);
-        setResizable(false);
+    private JButton createButton(String icon, String text) {
+
+        JButton button = new JButton(icon + "  " + text);
+
+        button.setPreferredSize(BUTTON_SIZE);
+
+        button.setFont(new Font("SansSerif", Font.BOLD, 13));
+        button.setFocusable(false);
+        button.setToolTipText(text);
+
+        return button;
     }
 }
