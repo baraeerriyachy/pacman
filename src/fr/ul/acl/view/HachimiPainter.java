@@ -46,7 +46,7 @@ public class HachimiPainter implements GamePainter {
 		loadImage("exit", "exit.gif");
 		loadImage("trap", "texture/trap.gif");
 		loadImage("portal", "texture/portal.gif");
-		loadImage("zombie", "ennemy/zombie.gif");
+		loadImage("zombie", "ennemy/zombie.gif"); 
 		loadImage("ghost", "ennemy/ghost.gif");
 
 		String[] effectNames = {"lightning", "explosion"};

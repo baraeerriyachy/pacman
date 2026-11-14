@@ -3,7 +3,6 @@ package fr.ul.acl.model;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Optional;
 
 public final class GameLevel {
 
@@ -22,6 +21,13 @@ public final class GameLevel {
                 ));
             }
         }
+        for (int level = 4; level <= 12; level++) {
+            LEVELS.add(new GameLevel(
+                "Level " + level + " - " + DIFFICULTIES[2],
+                3,
+                DIFFICULTIES[2] + "/level0.txt"
+            ));
+        }
     }
 
     private final String name;
@@ -39,7 +45,7 @@ public final class GameLevel {
         this.name = name;
         this.difficulty = difficulty;
         this.mapFile = mapFile;
-        this.locked = true;
+        this.locked = false;
     }
 
     // Queries
@@ -47,42 +53,8 @@ public final class GameLevel {
         return LEVELS;
     }
 
-    public static GameLevel getDefaultLevel() {
-        return LEVELS.get(0);
-    }
-
-    public static List<GameLevel> getAllLevels() {
-        return LEVELS;
-    }
-
-    public static Optional<GameLevel> findByDifficulty(int difficulty) {
-        return LEVELS.stream()
-                .filter(level -> level.difficulty == difficulty)
-                .findFirst();
-    }
-
-    public static List<GameLevel> getUnlockedLevels() {
-        return LEVELS.stream()
-                .filter(level -> !level.locked)
-                .toList();
-    }
-
-    public static List<GameLevel> getLockedLevels() {
-        return LEVELS.stream()
-                .filter(GameLevel::isLocked)
-                .toList();
-    }
-
-    public static List<GameLevel> findByDifficultyAndLockStatus(
-            int difficulty, boolean locked) {
-        return LEVELS.stream()
-                .filter(level -> level.difficulty == difficulty)
-                .filter(level -> level.locked == locked)
-                .toList();
-    }
 
     // Getters
-
     public String getName() {
         return name;
     }
@@ -103,10 +75,5 @@ public final class GameLevel {
 
     public void unlock() {
         locked = false;
-    }
-
-    @Override
-    public String toString() {
-        return name;
     }
 }

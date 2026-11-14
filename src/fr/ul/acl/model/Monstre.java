@@ -18,12 +18,12 @@ public class Monstre extends Entity {
         this.intangible = intangible;
     }
 
-    public static Monstre zombie(float x, float y) {
-        return new Monstre(x, y, 20, 0.03f);
+    public static Monstre zombie(float x, float y, int damage, float speed) {
+        return new Monstre(x, y, damage, speed);
     }
 
-    public static Monstre ghost(float x, float y) {
-        return new Monstre(x, y, 10, 0.25f, true);
+    public static Monstre ghost(float x, float y, int damage, float speed) {
+        return new Monstre(x, y, damage, speed, true);
     }
 
     public boolean isIntangible() {

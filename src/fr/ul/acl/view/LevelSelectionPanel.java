@@ -152,7 +152,7 @@ public class LevelSelectionPanel extends JPanel {
 
             JButton button = new JButton(
                     level.isLocked()
-                            ? level.getName() + " 🔒"
+                            ? "🔒"
                             : level.getName());
 
             button.setPreferredSize(new Dimension(110, 80));

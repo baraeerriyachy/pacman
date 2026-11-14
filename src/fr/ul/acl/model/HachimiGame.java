@@ -11,6 +11,8 @@ import fr.ul.acl.engine.Game;
 
 import java.util.*;
 
+import fr.ul.acl.map_tool.MapReader;
+
 public class HachimiGame implements Game {
 	private Plateau plateau;
     private Hero hero;
@@ -23,10 +25,6 @@ public class HachimiGame implements Game {
 	private boolean stopped = false;
 
 	private final static int DEFAULT_MOVES = 3;
-	
-	public HachimiGame(String source) throws IOException {
-        this(source, GameLevel.getDefaultLevel());
-    }
 
     /** Construit une partie sur le niveau choisi. */
     public HachimiGame(String source, GameLevel level) throws IOException {
