@@ -2,35 +2,109 @@
 package fr.ul.acl.engine;
 
 import javax.swing.SwingUtilities;
-import fr.ul.acl.model.GameOverScreen;
-import fr.ul.acl.model.HachimiGame;
-import fr.ul.acl.model.HachimiController;
-import java.util.Map;
-
+import javax.swing.JOptionPane;
 import java.io.IOException;
+import java.util.List;
+
+import fr.ul.acl.model.*;
 
 public class GameEngineGraphical {
 
-    private Game game; 
-    private GamePainter gamePainter;
-    private GameController gameController;
+    private final String helpFile;
+    private final HachimiController controller;
+
     private GraphicalInterface gui;
+
+    private HachimiGame game;
+    private GameLevel currentLevel;
+
+    private volatile boolean gameRunning;
     private Thread gameThread;
 
-    public GameEngineGraphical(
-            Game game,
-            GamePainter gamePainter,
-            GameController gameController) {
+    private final List<GameLevel> levels =
+            GameLevel.getAvailableLevels();
 
-        this.game = game;
-        this.gamePainter = gamePainter;
-        this.gameController = gameController;
+    public GameEngineGraphical(
+            String helpFile,
+            HachimiController controller) {
+
+        this.helpFile = helpFile;
+        this.controller = controller;
+    }
+
+    public void run() {
+        gui = new GraphicalInterface(controller);
+        showLevelSelection();
+    }
+
+    private void showLevelSelection() {
+        stopGameLoop(() -> {
+            gui.showLevelSelection(levels, this::startLevel);
+        });
+    }
+
+    private void startLevel(GameLevel level) {
+        stopGameLoop(() -> {
+            try {
+                currentLevel = level;
+
+                game = new HachimiGame(helpFile, currentLevel);
+
+                HachimiPainter painter = new HachimiPainter(game);
+
+                controller.resetCommand();
+
+                gui.showGame(
+                    painter,
+                    controller,
+                    game::toggleStopped,
+                    this::retryLevel,
+                    this::backToLevelSelection,
+                    game.getLevel().getName()
+                );
+
+                gui.paint();
+
+                startGameThread();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private void startGameThread() {
+        gameRunning = true;
+
+        HachimiGame currentGame = game;
+
         gameThread = new Thread(() -> {
             try {
-                playGame();
+                while (gameRunning && !currentGame.isFinished()) {
+
+                    Cmd command = controller.getCommand();
+
+                    if (!gameRunning) {
+                        break;
+                    }
+
+                    currentGame.evolve(command);
+
+                    SwingUtilities.invokeLater(() -> {
+                        if (game == currentGame && gameRunning) {
+                            gui.paint();
+                        }
+                    });
+
+                    Thread.sleep(100);
+                }
+
+                if (gameRunning && currentGame.isFinished()) {
+                    SwingUtilities.invokeLater(
+                        () -> finishGame(currentGame)
+                    );
+                }
+
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -39,64 +113,117 @@ public class GameEngineGraphical {
         gameThread.start();
     }
 
-    public void run() throws InterruptedException {
+    private void finishGame(HachimiGame finishedGame) {
+        if (game != finishedGame || !gameRunning) {
+            return;
+        }
 
-        // Création de l'interface graphique
-        this.gui = new GraphicalInterface(
-            this.gamePainter,
-            this.gameController,
-            Map.of(
-                "restart", this::restartGame,
-                "toggle_pause", ((HachimiGame)game)::toggleStopped
-            )
+        gameRunning = false;
+
+        boolean won = finishedGame.hasWon();
+
+        if (won) {
+            unlockNextLevel();
+        }
+
+        boolean hasNext = getNextLevel() != null;
+
+        GameOverScreen screen = new GameOverScreen(
+            won,
+            hasNext,
+            this::retryLevel,
+            this::startNextLevel,
+            this::showLevelSelection,
+            this::quit
         );
 
-        // Lancement de la première partie
-        startGameThread();
+        gui.showGameOver(screen);
     }
 
-    private void playGame() throws InterruptedException {
+    private void unlockNextLevel() {
+        int index = levels.indexOf(currentLevel);
 
-        while (!this.game.isFinished()) {
+        if (index >= 0 && index + 1 < levels.size()) {
+            levels.get(index + 1).unlock();
+        }
+    }
 
-            Cmd c = this.gameController.getCommand();
+    private GameLevel getNextLevel() {
+        int index = levels.indexOf(currentLevel);
 
-            this.game.evolve(c);
-
-            this.gui.paint();
-
-            Thread.sleep(100);
+        if (index < 0 || index + 1 >= levels.size()) {
+            return null;
         }
 
-        // Affichage de la fenêtre de victoire
-        SwingUtilities.invokeLater(() -> {
-            new GameOverScreen(
-                game.hasWon(),
-                this::restartGame
-            ).setVisible(true); 
-        });
+        GameLevel next = levels.get(index + 1);
+
+        return next.isLocked() ? null : next;
     }
 
-    private void restartGame() {
-        try {
-            // Stop the previous game loop
-            if (gameThread != null) {
-                gameThread.interrupt();
+    private void startNextLevel() {
+        GameLevel next = getNextLevel();
+
+        if (next != null) {
+            startLevel(next);
+        }
+    }
+
+    private void retryLevel() {
+        if (currentLevel != null) {
+            startLevel(currentLevel);
+        }
+    }
+
+    private void backToLevelSelection() {
+        int choice = JOptionPane.showConfirmDialog(
+            null,
+            "Give up the current game and return to level selection?",
+            "Leave current game?",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            showLevelSelection();
+        }
+    }
+
+    private void showGameOver(boolean won) {
+        GameOverScreen screen = new GameOverScreen(
+            won,
+            getNextLevel() != null,
+            this::retryLevel,
+            this::startNextLevel,
+            this::showLevelSelection,
+            this::quit
+        );
+
+        gui.showGameOver(screen);
+    }
+
+    private void stopGameLoop(Runnable callback) {
+        gameRunning = false;
+
+        Thread previousThread = gameThread;
+
+        if (previousThread == null || !previousThread.isAlive()) {
+            callback.run();
+            return;
+        }
+
+        Thread stopper = new Thread(() -> {
+            try {
+                previousThread.join();
+                SwingUtilities.invokeLater(callback);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
+        });
 
-            // Reset game state
-            ((HachimiGame) game).recommencer();
-            ((HachimiController) gameController).resetCommand();
+        stopper.start();
+    }
 
-            // Refresh display
-            gui.paint();
-
-            // Start a fresh game loop
-            startGameThread();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void quit() {
+        System.exit(0);
     }
 }
-

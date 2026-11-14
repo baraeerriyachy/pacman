@@ -1,96 +1,176 @@
+
 package fr.ul.acl.engine;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.function.Consumer;
 
-import fr.ul.acl.model.HachimiController;
-import fr.ul.acl.model.MusicPlayer;
-import fr.ul.acl.model.OptionsMenu;
-import java.util.Map;
+import fr.ul.acl.model.*;
 
 public class GraphicalInterface {
 
-    private DrawingPanel panel;
-    private JFrame frame;
+    private static final String SELECTION = "selection";
+    private static final String GAME = "game";
+    private static final String GAME_OVER = "game_over";
 
-    public GraphicalInterface(
-            GamePainter gamePainter,
-            GameController gameController,
-            Map<String, Runnable> actions) {
+    private final JFrame frame;
+    private final JPanel cards;
+    private final CardLayout cardLayout;
+    private final HachimiController controller;
+
+    private DrawingPanel drawingPanel;
+
+    public GraphicalInterface(HachimiController controller) {
+
+    this.controller = controller;
 
         frame = new JFrame("Hachimi");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        panel = new DrawingPanel(gamePainter);
-        panel.addKeyListener(gameController);
-        panel.setFocusable(true);
+        cardLayout = new CardLayout();
+        cards = new JPanel(cardLayout);
 
-        JButton optionsButton = new JButton("Paramètres");
+        frame.setContentPane(cards);
+    }
 
-        optionsButton.addActionListener(e -> {
+    public void showLevelSelection(
+            List<GameLevel> levels,
+            Consumer<GameLevel> onSelect) {
 
-			HachimiController controller =
-				(HachimiController) gameController;
+        cards.removeAll();
 
-			MusicPlayer musicPlayer =
-				controller.getMusicPlayer();
+        cards.add(
+            new LevelSelectionPanel(levels, onSelect),
+            SELECTION
+        );
 
-			OptionsMenu menu = new OptionsMenu(
-				frame,
-				controller,
-				musicPlayer,
-				() -> {
-					panel.requestFocusInWindow();
-				}
-			);
+        cardLayout.show(cards, SELECTION);
+        frame.setSize(600, 450);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.revalidate();
+        frame.repaint();
+    }
 
-			menu.setVisible(true);
+    public void showGame(
+            GamePainter painter,
+            GameController gameController,
+            Runnable pauseAction,
+            Runnable restartAction,
+            Runnable levelAction,
+            String levelName
+            ) {
 
+        drawingPanel = new DrawingPanel(painter);
+
+        drawingPanel.addKeyListener(gameController);
+        drawingPanel.setFocusable(true);
+
+        JPanel container = new JPanel(new BorderLayout());
+        container.add(drawingPanel, BorderLayout.CENTER);
+
+        JButton pause = new JButton("❚❚");
+        pause.setToolTipText("Pause");
+
+        pause.addActionListener(e -> {
+            pauseAction.run();
+
+            boolean paused = pause.getToolTipText().equals("Pause");
+
+            pause.setText(paused ? "▶" : "❚❚");
+            pause.setToolTipText(paused ? "Reprendre" : "Pause");
+
+            drawingPanel.requestFocusInWindow();
         });
 
-        JButton stopButton = new JButton("Pause");
-        boolean[] stopped = {false};
 
-        stopButton.addActionListener(e -> {
-            stopped[0] = !stopped[0];
+        JButton restart = new JButton("⟳");
+        restart.setToolTipText("Restart");
+        restart.addActionListener(e -> restartAction.run());
 
-            stopButton.setText(
-                stopped[0] ? "Reprendre" : "Pause"
+
+        JButton level = new JButton("⫶☰");
+        level.setToolTipText("Level Selection");
+        level.addActionListener(e -> levelAction.run());
+
+
+        JButton options = new JButton("🛠");
+        options.setToolTipText("Settings");
+
+        options.addActionListener(e -> {
+            MusicPlayer music = controller.getMusicPlayer();
+
+            OptionsMenu menu = new OptionsMenu(
+                frame,
+                controller,
+                music,
+                () -> drawingPanel.requestFocusInWindow()
             );
 
-            actions.get("toggle_pause").run();
-
-            panel.requestFocusInWindow();
+            menu.setVisible(true);
         });
 
-        JButton restartButton = new JButton("Recommencer");
+        JPanel bottom = new JPanel(new BorderLayout());
 
-        restartButton.addActionListener(e -> {
-            stopped[0] = false;
-            stopButton.setText("Pause");
-            actions.get("restart").run();
-            panel.requestFocusInWindow();
-        });
+        JLabel levelLabel = new JLabel(levelName);
+        levelLabel.setBorder(
+            BorderFactory.createEmptyBorder(0, 10, 0, 0)
+        );
 
-		JPanel container = new JPanel(new BorderLayout());
-		container.add(panel, BorderLayout.CENTER);
+        // levelLabel.setFont(
+        //     new Font("SansSerif", Font.BOLD, 18)
+        // );
 
-		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomPanel.add(stopButton);
-        bottomPanel.add(restartButton);
-		bottomPanel.add(optionsButton);
+        JPanel buttons = new JPanel(
+            new FlowLayout(FlowLayout.RIGHT)
+        );
 
-		container.add(bottomPanel, BorderLayout.SOUTH);
-		frame.setContentPane(container);
+        buttons.add(pause);
+        buttons.add(restart);
+        buttons.add(level);
+        buttons.add(options);
+
+        bottom.add(levelLabel, BorderLayout.WEST);
+        bottom.add(buttons, BorderLayout.EAST);
+
+        container.add(bottom, BorderLayout.SOUTH);
+
+        cards.removeAll();
+
+        cards.add(container, GAME);
+        cardLayout.show(cards, GAME);
 
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
 
-        panel.requestFocusInWindow();
+        frame.revalidate();
+        frame.repaint();
+
+        SwingUtilities.invokeLater(
+            () -> drawingPanel.requestFocusInWindow()
+        );
+    }
+
+    public void showGameOver(GameOverScreen screen) {
+        cards.removeAll();
+
+        cards.add(screen, GAME_OVER);
+        cardLayout.show(cards, GAME_OVER);
+
+        frame.setSize(400, 400);
+        frame.setLocationRelativeTo(null);
+        frame.revalidate();
+        frame.repaint();
     }
 
     public void paint() {
-        panel.drawGame();
+        if (drawingPanel != null) {
+            drawingPanel.drawGame();
+        }
+    }
+
+    public void close() {
+        frame.dispose();
     }
 }
