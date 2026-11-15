@@ -70,10 +70,6 @@ public class VisualEffect {
         return frames.get(currentFrame);
     }
 
-    public int getCurrentDelay() {
-        return delays.get(currentFrame);
-    }
-
     public boolean isFinished() {
         return currentFrame == frames.size() - 1;
     }
@@ -85,5 +81,13 @@ public class VisualEffect {
 
     public void reset() {
         currentFrame = 0;
+    }
+
+    public BufferedImage getFirstFrame() {
+        return frames.isEmpty() ? null : frames.get(0);
+    }
+
+    public BufferedImage getLastFrame() {
+        return frames.isEmpty() ? null : frames.get(frames.size() - 1);
     }
 }

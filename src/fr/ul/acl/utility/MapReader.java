@@ -20,6 +20,10 @@ public class MapReader {
 
     private final List<Monstre> monstres = new ArrayList<>();
     private final Properties symbols = new Properties();
+    private record IdentifiedElement(String model, Point position) {}
+
+    private final Map<String, List<IdentifiedElement>> elementsById =
+        new HashMap<>();
 
     private Plateau plateau;
     private Point depart;
@@ -32,15 +36,13 @@ public class MapReader {
         String identifiant,
         int x,
         int y,
-        String difficulte,
-        Map<String, Point> portalEntrances,
-        Map<String, Point> portalDestinations
+        String difficulte
     ) throws IOException {
 
         switch (model) {
 
             case "wall":
-                plateau.setBlock(x, y, Block.wall());
+                plateau.setBlock(x, y, Block.wall(null));
                 break;
 
             case "zombie":
@@ -61,28 +63,21 @@ public class MapReader {
 
             case "trap":
                 plateau.setBlock(x, y, Block.trap(
-                    Config.DAMAGE.get("trap").get(difficulte)
+                    Config.DAMAGE.get("trap").get(difficulte),
+                    null
+                ));
+                break;
+            case "bear trap":
+                plateau.setBlock(x, y, Block.trap(
+                    Config.DAMAGE.get("trap").get(difficulte),
+                    Trigger.bear_trap()
                 ));
                 break;
 
             case "treasure":
                 plateau.setBlock(x, y, Block.trigger(new Tresor()));
                 break;
-
-            case "lever":
-                plateau.setBlock(x, y, Block.trigger(new Lever()));
-                break;
-
-            case "portal":
-                requireIdentifier(identifiant);
-                portalEntrances.put(identifiant, new Point(x, y));
-                break;
-
-            case "destination":
-                requireIdentifier(identifiant);
-                portalDestinations.put(identifiant, new Point(x, y));
-                break;
-
+            
             case "exit":
                 plateau.setBlock(x, y, Block.exit());
                 break;
@@ -96,10 +91,68 @@ public class MapReader {
                 depart = new Point(x, y);
                 break;
 
+            case "lever":
+            case "portal":
+            case "destination":
+            case "secret wall":
+                registerElement(model, identifiant, x, y);
+                break;
+
             default:
                 throw new IOException(
                     "Modèle inconnu pour : " + model
                 );
+        }
+    }
+
+    private void resolveIdentifiedElements() throws IOException {
+        for (List<IdentifiedElement> group : elementsById.values()) {
+            List<Trigger> triggers = new ArrayList<>();
+            List<Mechanism> mechanisms = new ArrayList<>();
+
+            Point entrance = null;
+            Point destination = null;
+
+            for (IdentifiedElement element : group) {
+                Point position = element.position();
+                int x = position.x;
+                int y = position.y;
+
+                switch (element.model()) {
+
+                    case "portal" ->
+                        entrance = position;
+
+                    case "destination" ->
+                        destination = position;
+
+                    case "lever" -> {
+                        Trigger lever = Trigger.lever();
+                        triggers.add(lever);
+                        plateau.setBlock(x, y, Block.trigger(lever));
+                    }
+
+                    case "secret wall" -> {
+                        Mechanism mechanism = Mechanism.secret_wall();
+                        mechanisms.add(mechanism);
+                        plateau.setBlock(x, y, Block.wall(mechanism));
+                    }
+                }
+            }
+
+            // Establish mechanism requirements
+            for (Mechanism mechanism : mechanisms) {
+                mechanism.setRequirements(triggers);
+            }
+
+            // Connect portal to destination
+            if (entrance != null && destination != null) {
+                plateau.setBlock(
+                    entrance.x,
+                    entrance.y,
+                    Block.portal(destination)
+                );
+            }
         }
     }
 
@@ -150,9 +203,6 @@ public class MapReader {
 
             plateau = new Plateau(largeur, hauteur);
 
-            Map<String, Point> portalEntrances = new HashMap<>();
-            Map<String, Point> portalDestinations = new HashMap<>();
-
             for (int y = 0; y < hauteur; y++) {
 
                 String[] cases = lignes.get(y);
@@ -193,9 +243,7 @@ public class MapReader {
                         identifiant,
                         x,
                         y,
-                        difficulte,
-                        portalEntrances,
-                        portalDestinations
+                        difficulte
                     );
                 }
             }
@@ -204,35 +252,7 @@ public class MapReader {
                 throw new IOException("Position de départ introuvable.");
             }
 
-            // Connect portals to their corresponding destinations
-            for (Map.Entry<String, Point> entry : portalEntrances.entrySet()) {
-
-                String id = entry.getKey();
-                Point destination = portalDestinations.get(id);
-
-                if (destination == null) {
-                    throw new IOException(
-                        "Destination introuvable pour le portail PT" + id
-                    );
-                }
-
-                Point entrance = entry.getValue();
-
-                plateau.setBlock(
-                    entrance.x,
-                    entrance.y,
-                    Block.portal(destination)
-                );
-            }
-
-            // Check for destinations without entrances
-            for (String id : portalDestinations.keySet()) {
-                if (!portalEntrances.containsKey(id)) {
-                    throw new IOException(
-                        "Aucun portail correspondant à la destination DT" + id
-                    );
-                }
-            }
+            resolveIdentifiedElements();
 
             for (Monstre m : monstres) {
                 MonsterInitialiser.initialize(m, plateau);
@@ -240,13 +260,15 @@ public class MapReader {
         }
     }
 
-    private void requireIdentifier(String identifiant)
-            throws IOException {
-        if (identifiant.isEmpty()) {
+    private void registerElement(String model, String id, int x, int y) throws IOException {
+        if (id.isEmpty()) {
             throw new IOException(
                 "Identifiant manquant !"
             );
         }
+
+        elementsById.computeIfAbsent(id, k -> new ArrayList<>())
+            .add(new IdentifiedElement(model, new Point(x, y)));
     }
 
     public Plateau getPlateau() {

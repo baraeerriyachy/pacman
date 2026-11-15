@@ -19,16 +19,16 @@ public class Block {
     public static final Block EMPTY =
         new Block(Type.EMPTY, null, 0, null);
 
-    public static Block wall() {
-        return new Block(Type.WALL, null, 0, null);
+    public static Block wall(Trigger t) {
+        return new Block(Type.WALL, null, 0, t);
     }
 
     public static Block exit() {
         return new Block(Type.EXIT, null, 0, null);
     }
 
-    public static Block trap(int damage) {
-        return new Block(Type.TRAP, null, damage, null);
+    public static Block trap(int damage, Trigger t) {
+        return new Block(Type.TRAP, null, damage, t);
     }
 
     public static Block portal(Point destination) {

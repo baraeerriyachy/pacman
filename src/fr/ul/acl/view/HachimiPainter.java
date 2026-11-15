@@ -155,10 +155,11 @@ public class HachimiPainter implements GamePainter {
 					case EMPTY -> null;
 				};
 
+				Trigger t = p.getBlockTrigger(x, y);
 				if (image == null) 
 					continue;
-				else if(image.isEmpty())
-					drawBlock(crayon,p.getBlockTrigger(x, y).getImage(),x,y);
+				else if(t!=null)
+					drawBlock(crayon,t.getImage(),x,y);
 				else
 					drawBlock(crayon,images.get(image),x,y);
 			}

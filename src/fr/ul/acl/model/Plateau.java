@@ -46,7 +46,12 @@ public class Plateau {
         for (int x = p.xPrev(); x <= p.xNext(); x++) {
             for (int y = p.yPrev(); y <= p.yNext(); y++) {
                 if (grid[x][y].getType() == Block.Type.WALL)
-                    return false;
+                {
+                    Trigger t = grid[x][y].getTrigger();
+                    if(t == null)  
+                        return false;
+                    return t.isActivated();
+                }
             }
         }
 
@@ -69,6 +74,13 @@ public class Plateau {
 
                     case TRAP:
                         damage = Math.max(damage, block.getDamage());
+                        Trigger t = block.getTrigger();
+                        if(t != null){
+                            if(t.isActivated())
+                                damage = 0;
+                            else
+                                t.activate();
+                        }
                         interacable = false;
                         break;
 

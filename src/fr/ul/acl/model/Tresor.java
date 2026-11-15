@@ -1,24 +1,21 @@
 package fr.ul.acl.model;
-
-import javax.swing.ImageIcon;
+import fr.ul.acl.view.VisualEffect;
 
 public class Tresor extends Trigger {
 
-    private static final ImageIcon STATIC_IMG =
-    new ImageIcon(Tresor.class.getResource("/texture/tresor.png"));
+    private static final VisualEffect TRESOR = new VisualEffect("texture/tresor.gif");
 
     public Tresor() {
         super(
-            STATIC_IMG,
-            new ImageIcon(Tresor.class.getResource("/texture/tresor_open.gif"))
+            TRESOR
         );
     }
 
     @Override
     public void activate() {
         if (!activated) {
-            activated = true;
             // TODO: Give treasure / reward to Hero
         }
+        super.activate();
     }
 }

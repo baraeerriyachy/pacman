@@ -2,11 +2,11 @@ __ __ __ WL WL GH WL GH __ __ __
 __ HR __ WL __ __ ZB __ __ __ TS
 WL WL __ WL __ ZB WL ZB __ WL __
 __ __ __ __ __ __ GH __ __ __ __
-__ WL __ WL ZB __ WL __ __ WL DT1
+__ WL __ WL ZB __ WL __ __ WL D1
 __ __ WL __ __ __ __ ZB __ __ __
 WL __ WL ZB __ ZB __ __ WL __ __
-PT1 __ WL __ __ __ GH __ __ __ PT2
-__ WL WL WL TR TR TR WL WL WL __
-WL TR TR TR TR TR TR TR TR TR WL
-__ TR WL WL WL WL WL WL TR TR __
-__ WL __ DT2 __ __ __ __ __ __ EX
+P1 __ WL __ __ __ GH __ __ __ P2
+__ WL WL WL BT BT BT WL WL WL __
+WL BT BT BT BT BT BT BT BT BT WL
+__ BT WL WL WL WL WL WL BT BT __
+__ WL __ D2 __ __ __ __ __ __ EX
