@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import fr.ul.acl.view.VisualEffect;
 
 public class Trigger {
-    private static final VisualEffect BEAR_TRAP = new VisualEffect("texture/bear_trap.gif");
-    private static final VisualEffect LEVER = new VisualEffect("texture/lever.gif");
-
     protected boolean playingVisual;
     protected boolean activated;
     protected final VisualEffect visual;
@@ -24,20 +21,23 @@ public class Trigger {
         this.playingVisual = false;
     }
 
-    public static Trigger bear_trap() {
-        return new Trigger(BEAR_TRAP);
-    }
-
-    public static Trigger lever() {
-        return new Trigger(LEVER);
-    }
-
-
     public void activate() {
         if (!activated) {
             visual.reset();
             playingVisual = true;
         }
+    }
+
+    public void deactivate() {
+        if (activated) {
+            visual.reverse();
+            playingVisual = true;
+        }
+    }
+
+    public void setActived(){
+        activated = true;
+        visual.reverse();
     }
 
     public boolean isActivated() {
@@ -48,7 +48,7 @@ public class Trigger {
         if(playingVisual)
         {
             if(visual.isFinished()){
-                activated = true;
+                activated = !visual.isReversed();
                 playingVisual = false;
                 for(Mechanism m : dependents){
                     if(m.canActivate()){

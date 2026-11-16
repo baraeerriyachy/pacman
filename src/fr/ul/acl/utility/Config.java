@@ -7,31 +7,31 @@ public final class Config {
     public static final Map<String, Map<String, Integer>> DAMAGE = Map.of(
         "ghost", Map.of(
             "easy", 5,
-            "medium", 10,
-            "hard", 15
+            "moderate", 10,
+            "difficult", 15
         ),
         "zombie", Map.of(
             "easy", 10,
-            "medium", 20,
-            "hard", 30
+            "moderate", 20,
+            "difficult", 30
         ),
         "trap", Map.of(
             "easy", 10,
-            "medium", 15,
-            "hard", 20
+            "moderate", 15,
+            "difficult", 20
         )
     );
 
     public static final Map<String, Map<String, Float>> SPEED = Map.of(
         "ghost", Map.of(
             "easy", 0.15f,
-            "medium", 0.2f,
-            "hard", 0.3f
+            "moderate", 0.2f,
+            "difficult", 0.3f
         ),
         "zombie", Map.of(
             "easy", 0.02f,
-            "medium", 0.03f,
-            "hard", 0.05f
+            "moderate", 0.03f,
+            "difficult", 0.05f
         )
     );
 }

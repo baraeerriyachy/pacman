@@ -1,6 +1,7 @@
 package fr.ul.acl.utility;
 
 import fr.ul.acl.model.*;
+import fr.ul.acl.view.VisualEffect;
 
 import java.awt.Point;
 import java.io.BufferedReader;
@@ -19,6 +20,8 @@ import java.util.regex.Pattern;
 public class MapReader {
 
     private final List<Monstre> monstres = new ArrayList<>();
+    private List<TimedGroup> timedGroups = new ArrayList<>();
+
     private final Properties symbols = new Properties();
     private record IdentifiedElement(String model, Point position) {}
 
@@ -27,6 +30,7 @@ public class MapReader {
 
     private Plateau plateau;
     private Point depart;
+    private String difficulte;
 
     private static final Pattern SYMBOL_PATTERN =
         Pattern.compile("([A-Z]+)(\\d*)");
@@ -35,8 +39,7 @@ public class MapReader {
         String model,
         String identifiant,
         int x,
-        int y,
-        String difficulte
+        int y
     ) throws IOException {
 
         switch (model) {
@@ -67,10 +70,10 @@ public class MapReader {
                     null
                 ));
                 break;
-            case "bear trap":
+            case "bear_trap":
                 plateau.setBlock(x, y, Block.trap(
                     Config.DAMAGE.get("trap").get(difficulte),
-                    Trigger.bear_trap()
+                    new Trigger(VisualEffect.getTexture(model))
                 ));
                 break;
 
@@ -92,9 +95,10 @@ public class MapReader {
                 break;
 
             case "lever":
-            case "portal":
+            case "portal": 
             case "destination":
-            case "secret wall":
+            case "secret_wall":
+            case "timed_trap":
                 registerElement(model, identifiant, x, y);
                 break;
 
@@ -106,9 +110,12 @@ public class MapReader {
     }
 
     private void resolveIdentifiedElements() throws IOException {
+        int index = 1;
+        
         for (List<IdentifiedElement> group : elementsById.values()) {
             List<Trigger> triggers = new ArrayList<>();
             List<Mechanism> mechanisms = new ArrayList<>();
+            List<Trigger> timedTriggers = new ArrayList<>();
 
             Point entrance = null;
             Point destination = null;
@@ -118,7 +125,9 @@ public class MapReader {
                 int x = position.x;
                 int y = position.y;
 
-                switch (element.model()) {
+                String model = element.model();
+
+                switch (model) {
 
                     case "portal" ->
                         entrance = position;
@@ -127,15 +136,23 @@ public class MapReader {
                         destination = position;
 
                     case "lever" -> {
-                        Trigger lever = Trigger.lever();
+                        Trigger lever = new Trigger(VisualEffect.getTexture(model));
                         triggers.add(lever);
                         plateau.setBlock(x, y, Block.trigger(lever));
                     }
 
-                    case "secret wall" -> {
-                        Mechanism mechanism = Mechanism.secret_wall();
+                    case "secret_wall" -> {
+                        Mechanism mechanism = new Mechanism(VisualEffect.getTexture(model));
                         mechanisms.add(mechanism);
                         plateau.setBlock(x, y, Block.wall(mechanism));
+                    }
+
+                    case "timed_trap"-> {
+                        Trigger t = new Trigger(VisualEffect.getTexture(model));
+                        timedTriggers.add(t);
+                        plateau.setBlock(x, y, Block.trap(
+                            Config.DAMAGE.get("trap").get(difficulte),
+                            t));
                     }
                 }
             }
@@ -152,6 +169,18 @@ public class MapReader {
                     entrance.y,
                     Block.portal(destination)
                 );
+            }
+
+            // Create timed group
+            if (!timedTriggers.isEmpty()) {
+                timedGroups.add(new TimedGroup(
+                    timedTriggers,
+                    index % 2 == 0, 
+                    2_000_000_000L,
+                    (index-1) / 2 * 500_000_000L 
+                ));
+                
+                index ++;
             }
         }
     }
@@ -178,7 +207,7 @@ public class MapReader {
             throw new IOException("Carte introuvable : " + nomFichier);
         }
 
-        String difficulte = nomFichier.split("/")[0];
+        difficulte = nomFichier.split("/")[0];
 
         try (BufferedReader lecteur = new BufferedReader(
                 new InputStreamReader(flux, StandardCharsets.UTF_8))) {
@@ -242,8 +271,7 @@ public class MapReader {
                         model,
                         identifiant,
                         x,
-                        y,
-                        difficulte
+                        y
                     );
                 }
             }
@@ -281,5 +309,9 @@ public class MapReader {
 
     public List<Monstre> getMonstres() {
         return monstres;
+    }
+
+    public List<TimedGroup> gettimedGroups(){
+        return timedGroups;
     }
 }

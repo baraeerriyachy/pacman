@@ -5,6 +5,7 @@ import java.awt.Point;
 
 import fr.ul.acl.engine.Cmd;
 import fr.ul.acl.engine.Game;
+import fr.ul.acl.engine.GameClock;
 
 import java.util.*;
 
@@ -16,10 +17,13 @@ public class HachimiGame implements Game {
 	private boolean won;
     private final GameLevel level;
     private List<Monstre> monstres;
+	private List<TimedGroup> timedGroups;
+	
 	private BlockEffects effects;
 	private String message = "";
 	private String visualEffect = "";
 	private boolean stopped = false;
+	private final GameClock clock = new GameClock();
 
     /** Construit une partie sur le niveau choisi. */
     public HachimiGame(GameLevel level) throws IOException {
@@ -40,6 +44,11 @@ public class HachimiGame implements Game {
 	public void evolve(Cmd commande) {
 		if(stopped)
 			return;
+
+		clock.update();
+		for (TimedGroup group : timedGroups) {
+			group.update(clock.getTime());
+		}
 
 		Position pHero = evolveHero(commande);
 		for (Monstre m : monstres){
@@ -128,6 +137,10 @@ public class HachimiGame implements Game {
 
 	public void toggleStopped(){
 		this.stopped = !stopped;
+		if(stopped)
+			clock.pause();
+		else
+			clock.resume();
 	}
 
 	public Plateau getPlateau() {
@@ -174,9 +187,12 @@ public class HachimiGame implements Game {
 	    hero = new Hero(depart.x, depart.y);
 
 		monstres = lecteur.getMonstres();
+		timedGroups = lecteur.gettimedGroups();
 
 	    won = false;
 		stopped = false;
+
+		clock.start();
 	}
 }
 
