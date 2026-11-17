@@ -3,11 +3,12 @@ package fr.ul.acl.model;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Optional;
 
 public final class GameLevel {
 
     private static final List<GameLevel> LEVELS = new ArrayList<>();
+    public static int LatestDifficulty;
+
     public static String[] DIFFICULTIES = {
             "easy", "moderate", "difficult"
         };
@@ -22,11 +23,16 @@ public final class GameLevel {
                 ));
             }
         }
+        for(int i = 0; i < 6; i++){
+            LEVELS.get(i).unlock();
+        }
+        LEVELS.get(5).setDark();
     }
 
     private final String name;
     private final int difficulty;
     private final String mapFile;
+    private boolean darkness;
     private boolean locked;
 
     public GameLevel(String name, int difficulty, String mapFile) {
@@ -40,6 +46,7 @@ public final class GameLevel {
         this.difficulty = difficulty;
         this.mapFile = mapFile;
         this.locked = true;
+        this.darkness = false;
     }
 
     // Queries
@@ -47,42 +54,8 @@ public final class GameLevel {
         return LEVELS;
     }
 
-    public static GameLevel getDefaultLevel() {
-        return LEVELS.get(0);
-    }
-
-    public static List<GameLevel> getAllLevels() {
-        return LEVELS;
-    }
-
-    public static Optional<GameLevel> findByDifficulty(int difficulty) {
-        return LEVELS.stream()
-                .filter(level -> level.difficulty == difficulty)
-                .findFirst();
-    }
-
-    public static List<GameLevel> getUnlockedLevels() {
-        return LEVELS.stream()
-                .filter(level -> !level.locked)
-                .toList();
-    }
-
-    public static List<GameLevel> getLockedLevels() {
-        return LEVELS.stream()
-                .filter(GameLevel::isLocked)
-                .toList();
-    }
-
-    public static List<GameLevel> findByDifficultyAndLockStatus(
-            int difficulty, boolean locked) {
-        return LEVELS.stream()
-                .filter(level -> level.difficulty == difficulty)
-                .filter(level -> level.locked == locked)
-                .toList();
-    }
 
     // Getters
-
     public String getName() {
         return name;
     }
@@ -100,13 +73,18 @@ public final class GameLevel {
     }
 
     // Actions
-
     public void unlock() {
         locked = false;
+        LatestDifficulty = this.difficulty;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    // Actions
+    public void setDark() {
+        darkness = true;
+    }
+
+    // Actions
+    public boolean isDark() {
+        return darkness;
     }
 }

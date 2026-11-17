@@ -1,4 +1,4 @@
-package fr.ul.acl.model;
+package fr.ul.acl.view;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -6,6 +6,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.*;
+
+import fr.ul.acl.controller.*;
 
 public class OptionsMenu extends JFrame {
 

@@ -8,6 +8,7 @@ public class Plateau {
     private final int hauteur;
     private final Block[][] grid;
     private boolean interacable;
+    private final List<Point> lightSources = new ArrayList<>();
 
     public Plateau(int largeur, int hauteur) {
         if (largeur <= 0 || hauteur <= 0) {
@@ -29,6 +30,14 @@ public class Plateau {
         
     } 
 
+    public void addLightSource(int x, int y) {
+        lightSources.add(new Point(x, y));
+    }
+
+    public List<Point> getLightSources() {
+        return lightSources;
+    }
+
     public boolean isInsideMap(Position p) {
         return p.x >= 0 && p.x + 1 <= largeur
         && p.y >= 0 && p.y + 1 <= hauteur;
@@ -46,7 +55,12 @@ public class Plateau {
         for (int x = p.xPrev(); x <= p.xNext(); x++) {
             for (int y = p.yPrev(); y <= p.yNext(); y++) {
                 if (grid[x][y].getType() == Block.Type.WALL)
-                    return false;
+                {
+                    Trigger t = grid[x][y].getTrigger();
+                    if(t == null)  
+                        return false;
+                    return t.isActivated();
+                }
             }
         }
 
@@ -69,6 +83,13 @@ public class Plateau {
 
                     case TRAP:
                         damage = Math.max(damage, block.getDamage());
+                        Trigger t = block.getTrigger();
+                        if(t != null){
+                            if(t.isActivated())
+                                damage = 0;
+                            else
+                                t.activate();
+                        }
                         interacable = false;
                         break;
 

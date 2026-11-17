@@ -1,10 +1,12 @@
 
-package fr.ul.acl.model;
+package fr.ul.acl.view;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
+
+import fr.ul.acl.model.GameLevel;
 
 public class LevelSelectionPanel extends JPanel {
 
@@ -28,13 +30,14 @@ public class LevelSelectionPanel extends JPanel {
         this.levels = levels;
         this.onSelect = onSelect;
 
+        currentDifficulty = GameLevel.LatestDifficulty;
+
         setLayout(new BorderLayout(15, 20));
         setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
         createHeader();
         createContent();
         
-        levels.get(0).unlock();
         updateLevels();
     }
 
@@ -150,7 +153,7 @@ public class LevelSelectionPanel extends JPanel {
 
             JButton button = new JButton(
                     level.isLocked()
-                            ? level.getName() + " 🔒"
+                            ? "🔒"
                             : level.getName());
 
             button.setPreferredSize(new Dimension(110, 80));

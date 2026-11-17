@@ -1,5 +1,5 @@
 
-package fr.ul.acl.model;
+package fr.ul.acl.view;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -19,8 +19,12 @@ import org.w3c.dom.NodeList;
 public class VisualEffect {
 
     private final List<BufferedImage> frames = new ArrayList<>();
-    private final List<Integer> delays = new ArrayList<>();
     private int currentFrame = 0;
+    private boolean reversed = false;
+
+    public static VisualEffect getTexture(String name){
+        return new VisualEffect("texture/" + name + ".gif");
+    }
 
     public VisualEffect(String path) {
         ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
@@ -48,12 +52,6 @@ public class VisualEffect {
                             .getElementsByTagName("GraphicControlExtension");
 
                     IIOMetadataNode control = (IIOMetadataNode) nodes.item(0);
-
-                    int delay = Integer.parseInt(
-                            control.getAttribute("delayTime")
-                    );
-
-                    delays.add(delay * 10);
                 }
             }
 
@@ -70,20 +68,34 @@ public class VisualEffect {
         return frames.get(currentFrame);
     }
 
-    public int getCurrentDelay() {
-        return delays.get(currentFrame);
-    }
-
     public boolean isFinished() {
-        return currentFrame == frames.size() - 1;
+        return reversed ? currentFrame == 0 : currentFrame == frames.size() - 1;
     }
 
     public void nextFrame() {
         if (!isFinished())
-            currentFrame++;
+            currentFrame += reversed ? -1 : 1;
     }
 
     public void reset() {
         currentFrame = 0;
+        reversed = false;
+    }
+
+    public void reverse() {
+        currentFrame = frames.size() - 1;
+        reversed = true;
+    }
+
+    public boolean isReversed(){
+        return reversed;
+    }
+
+    public BufferedImage getFirstFrame() {
+        return frames.get(0);
+    }
+
+    public BufferedImage getLastFrame() {
+        return frames.get(frames.size() - 1);
     }
 }

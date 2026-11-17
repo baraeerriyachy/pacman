@@ -6,11 +6,14 @@ import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.util.List;
 
-import fr.ul.acl.model.*;
+import fr.ul.acl.model.HachimiGame;
+import fr.ul.acl.model.GameLevel;
+import fr.ul.acl.controller.HachimiController;
+import fr.ul.acl.view.HachimiPainter;
+import fr.ul.acl.view.GameOverScreen;
 
 public class GameEngineGraphical {
 
-    private final String helpFile;
     private final HachimiController controller;
 
     private GraphicalInterface gui;
@@ -25,10 +28,8 @@ public class GameEngineGraphical {
             GameLevel.getAvailableLevels();
 
     public GameEngineGraphical(
-            String helpFile,
             HachimiController controller) {
 
-        this.helpFile = helpFile;
         this.controller = controller;
     }
 
@@ -48,7 +49,7 @@ public class GameEngineGraphical {
             try {
                 currentLevel = level;
 
-                game = new HachimiGame(helpFile, currentLevel);
+                game = new HachimiGame(currentLevel);
 
                 HachimiPainter painter = new HachimiPainter(game);
 
