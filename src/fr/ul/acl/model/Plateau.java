@@ -8,6 +8,7 @@ public class Plateau {
     private final int hauteur;
     private final Block[][] grid;
     private boolean interacable;
+    private final List<Point> lightSources = new ArrayList<>();
 
     public Plateau(int largeur, int hauteur) {
         if (largeur <= 0 || hauteur <= 0) {
@@ -28,6 +29,14 @@ public class Plateau {
         }
         
     } 
+
+    public void addLightSource(int x, int y) {
+        lightSources.add(new Point(x, y));
+    }
+
+    public List<Point> getLightSources() {
+        return lightSources;
+    }
 
     public boolean isInsideMap(Position p) {
         return p.x >= 0 && p.x + 1 <= largeur

@@ -1,12 +1,8 @@
+
 package fr.ul.acl.view;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-
-import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -17,229 +13,441 @@ import fr.ul.acl.model.*;
 
 public class HachimiPainter implements GamePainter {
 
-	private static final int TAILLE_CASE = 60;
-	private HachimiGame game;
-	
-	private Map<String, Image> images = new HashMap<>();
-	private Map<String, VisualEffect> visuals = new HashMap<>();
+    private static final int TAILLE_CASE = 60;
 
-	private void loadImage(String name, String filename) {
-		URL url = getClass().getResource("/" + filename);
+    // Fixed viewport dimensions
+    private static final int MAX_WIDTH = 960;
+	private static final int MAX_HEIGHT = 720;
 
-		if (url == null) {
-			throw new IllegalStateException(filename + " not found!");
-		}
+	private final int screenWidth;
+	private final int screenHeight;
+	private final boolean scroll;
 
-		images.put(name, new ImageIcon(url).getImage());
-	}
-	/**
-	 * appelle constructeur parent
-	 * 
-	 * @param game
-	 *            le jeutest a afficher
-	 */
-	public HachimiPainter(HachimiGame game) {
-		this.game = game;
+    // Lighting
+    private static final int LIGHT_RADIUS = 2 * TAILLE_CASE;
 
-		loadImage("background", "background.jpg");
-		loadImage("wall", "texture/rock.png");
-		loadImage("exit", "exit.gif");
-		loadImage("trap", "texture/trap.gif");
-		loadImage("portal", "texture/portal.gif");
-		loadImage("zombie", "ennemy/zombie.gif"); 
-		loadImage("ghost", "ennemy/ghost.gif");
+    private HachimiGame game;
 
-		String[] effectNames = {"lightning", "explosion"};
+    private int cameraX = 0;
+    private int cameraY = 0;
 
-		for (String name : effectNames) {
-			visuals.put(name, new VisualEffect("effect/" + name + ".gif"));
-		}
+    private Map<String, Image> images = new HashMap<>();
+    private Map<String, VisualEffect> visuals = new HashMap<>();
 
-		String[] directions = {"back", "front", "left", "right"};
-		String[] states = {"idle", "walk", "hurt"};
+    private void loadImage(String name, String filename) {
+        URL url = getClass().getResource("/" + filename);
 
-		for (String direction : directions) {
-			for (String state : states) {
-				String animation = state + "_" + direction;
-				loadImage(animation, "hero/" + animation + ".gif");
-			}
-		}
-	}
+        if (url == null) {
+            throw new IllegalStateException(filename + " not found!");
+        }
 
-	/**
-	 * methode  redefinie de Afficheur retourne une image du jeu
-	 */
-	@Override
-	public void draw(BufferedImage im) {
-		Graphics2D crayon = (Graphics2D) im.getGraphics();
-		drawBackground(crayon, im.getWidth(), im.getHeight());
+        images.put(name, new ImageIcon(url).getImage());
+    }
 
-		drawPlateau(crayon);
-		
-		for (Monstre m : game.getMonstres()) {
-			drawEntity(crayon, images.get(m.isIntangible() ? "ghost" : "zombie"), m);
-		}
+    /**
+     * Constructeur du painter.
+     *
+     * @param game le jeu à afficher
+     */
+    public HachimiPainter(HachimiGame game) {
+        this.game = game;
+		int mapWidth = game.getPlateau().getLargeur() * TAILLE_CASE;
+		int mapHeight = game.getPlateau().getHauteur() * TAILLE_CASE;
 
-		drawHero(crayon);
+		scroll = mapWidth > MAX_WIDTH || mapHeight > MAX_HEIGHT;
 
-		drawHealthBar(crayon, game.getHero());
+		screenWidth = Math.min(mapWidth, MAX_WIDTH);
+		screenHeight = Math.min(mapHeight, MAX_HEIGHT);
 
-		drawMessage(crayon);
+        loadImage("background", "background.jpg");
+        loadImage("wall", "texture/rock.png");
+        loadImage("exit", "exit.gif");
+        loadImage("trap", "texture/trap.gif");
+        loadImage("portal", "texture/portal.gif");
+        loadImage("torch", "texture/torch.gif");
+        loadImage("zombie", "ennemy/zombie.gif");
+        loadImage("ghost", "ennemy/ghost.gif");
 
-		drawEffect(crayon);
-	}
+        String[] effectNames = {"lightning", "explosion"};
 
-	private void drawEffect(Graphics2D crayon){
-		String effectName = game.getVisualEffect();
-		if(effectName.isEmpty())
-			return;
-		
-		VisualEffect visual = visuals.get(effectName);
-		BufferedImage beam = visual.getCurrentFrame();
-		int width = 3 * TAILLE_CASE;
-		int height = (int) (beam.getHeight() * (width / (double) beam.getWidth()));
+        for (String name : effectNames) {
+            visuals.put(name, new VisualEffect("effect/" + name + ".gif"));
+        }
 
-		crayon.drawImage(
-			beam,
-			(game.getHero().getPos().xPrev() - 1) * TAILLE_CASE,
-			(game.getHero().getPos().yPrev() + 2) * TAILLE_CASE - height,
-			width,
-			height,
-			null
-		);
+        String[] directions = {"back", "front", "left", "right"};
+        String[] states = {"idle", "walk", "hurt"};
 
-		if(visual.isFinished()){
-			visual.reset();
-			game.unsetVisual();
-		}
+        for (String direction : directions) {
+            for (String state : states) {
+                String animation = state + "_" + direction;
+                loadImage(animation, "hero/" + animation + ".gif");
+            }
+        }
+    }
 
-		visual.nextFrame();
-	}
+    /**
+     * Dessine le jeu dans une fenêtre de dimensions fixes.
+     */
+    @Override
+    public void draw(BufferedImage im) {
 
-	private void drawMessage(Graphics2D crayon){
-		crayon.setFont(new Font("Arial", Font.BOLD, 18));
-		if (!game.getMessage().isEmpty()) {
-			crayon.setColor(Color.WHITE);
-			crayon.drawString(
-				game.getMessage(),
-				20,
-				getHeight() - 20
-			);
-		}
-	}
+		if(scroll)
+        	updateCamera();
 
-	private void drawHero(Graphics2D crayon){
-		Hero hero = game.getHero();
-		String animation = hero.getAnimationState() + "_" + hero.getAnimationDirection();
-		drawEntity(crayon, images.get(animation), hero);
-	}
+        Graphics2D screen = im.createGraphics();
 
-	private void drawPlateau(Graphics2D crayon){
-		Plateau p = game.getPlateau();
-		for (int y = 0; y < p.getHauteur(); y++) {
-			for (int x = 0; x < p.getLargeur(); x++) {
-				// String image = null;
-				// switch (p.getBlockType(x, y)) {
-				// 	case WALL: image = "wall"; break;
-				// 	case TRAP: image = "trap"; break;
-				// 	case PORTAL: image = "portal";break;
-				// 	case TRIGGER : image = "";break;
-				// 	case EMPTY:break;
-				// }
-				String image = switch (p.getBlockType(x, y)) {
-					case WALL -> "wall";
-					case TRAP -> "trap";
-					case PORTAL -> "portal";
-					case EXIT -> "exit";
-					case TRIGGER -> "";
-					case EMPTY -> null;
-				};
+        // Background
+        drawBackground(screen, im.getWidth(), im.getHeight());
 
-				Trigger t = p.getBlockTrigger(x, y);
-				if (image == null) 
-					continue;
-				else if(t!=null)
-					drawBlock(crayon,t.getImage(),x,y);
-				else
-					drawBlock(crayon,images.get(image),x,y);
-			}
-		}
-	}
+        // World rendering (map coordinates)
+        Graphics2D world = (Graphics2D) screen.create();
+        world.translate(-cameraX, -cameraY);
 
-	private void drawBackground(Graphics2D crayon, int w, int h){
-		crayon.drawImage(
-			images.get("background"),
-			0, 0, w, h,
-			null
-		);
-	}
+        drawPlateau(world);
 
+        for (Monstre m : game.getMonstres()) {
+            drawEntity(
+                world,
+                images.get(m.isIntangible() ? "ghost" : "zombie"),
+                m
+            );
+        }
 
-	private void drawEntity(Graphics2D crayon, Image image, Entity e){
-		drawUnit(
-			crayon, image, 
-			(int)(e.getPos().x * TAILLE_CASE),
-			(int)(e.getPos().y * TAILLE_CASE)
-		);
-	}
-	private void drawBlock(Graphics2D crayon, Image image, int x, int y){
-		drawUnit(
-			crayon, image, 
-			x * TAILLE_CASE,
-			y * TAILLE_CASE
-		);
-	}
+        world.dispose();
 
-	private void drawUnit(Graphics2D crayon, Image image, int x, int y){
-		crayon.drawImage(
-			image,x,y,
-			TAILLE_CASE,
-			TAILLE_CASE,
-			null
-		);
-	}
+        // Darkness overlay
+		if(game.getLevel().isDark())
+        	drawDarkness(screen, im.getWidth(), im.getHeight());
 
-	@Override
-	public int getWidth() {
-		return game.getPlateau().getLargeur() * TAILLE_CASE;
-	}
+        // Hero remains visible above the darkness
+        Graphics2D heroLayer = (Graphics2D) screen.create();
+        heroLayer.translate(-cameraX, -cameraY);
 
-	@Override
-	public int getHeight() {
-		return game.getPlateau().getHauteur() * TAILLE_CASE;
-	}
+        drawHero(heroLayer);
+        drawEffect(heroLayer);
 
-	private void drawHealthBar(Graphics2D g2, Hero hero) {
-		int x = 20;
-		int y = 20;
-		int width = 120;
-		int height = 20;
+        heroLayer.dispose();
 
-		int maxHp = hero.getMaxHp();
-		int currentHp = hero.getHealthPoints();
+        // HUD (screen coordinates)
+        drawHealthBar(screen, game.getHero());
+        drawMessage(screen);
 
-		// Background
-		g2.setColor(Color.DARK_GRAY);
-		g2.fillRoundRect(x, y, width, height, 10, 10);
+        screen.dispose();
+    }
 
-		// Current health
-		int healthWidth = (int) ((double) currentHp / maxHp * width);
+    /**
+     * Updates the camera to follow the hero.
+     * The camera stops at map boundaries.
+     */
+    private void updateCamera() {
 
-		g2.setColor(Color.GREEN);
-		g2.fillRoundRect(x, y, healthWidth, height, 10, 10);
+        Hero hero = game.getHero();
 
-		// Border
-		g2.setColor(Color.WHITE);
-		g2.drawRoundRect(x, y, width, height, 10, 10);
+        int mapWidth =
+            game.getPlateau().getLargeur() * TAILLE_CASE;
 
-		// HP text
-		String text = currentHp + " / " + maxHp;
-		g2.setFont(new Font("Arial", Font.BOLD, 12));
+        int mapHeight =
+            game.getPlateau().getHauteur() * TAILLE_CASE;
 
-		FontMetrics fm = g2.getFontMetrics();
-		int textX = x + (width - fm.stringWidth(text)) / 2;
-		int textY = y + (height - fm.getHeight()) / 2 + fm.getAscent();
+        int targetX =
+            (int) (hero.getPos().x * TAILLE_CASE)
+            - screenWidth / 2
+            + TAILLE_CASE / 2;
 
-		g2.drawString(text, textX, textY);
-	}
+        int targetY =
+            (int) (hero.getPos().y * TAILLE_CASE)
+            - screenHeight / 2
+            + TAILLE_CASE / 2;
+
+        cameraX = Math.max(
+            0,
+            Math.min(targetX, mapWidth - screenWidth)
+        );
+
+        cameraY = Math.max(
+            0,
+            Math.min(targetY, mapHeight - screenHeight)
+        );
+    }
+
+    /**
+     * Applies darkness outside the hero's visibility radius.
+     */
+    private void drawDarkness(
+        Graphics2D g2,
+        int width,
+        int height
+    ) {
+        BufferedImage darkness = new BufferedImage(
+            width, height, BufferedImage.TYPE_INT_ARGB
+        );
+
+        Graphics2D dark = darkness.createGraphics();
+
+        // Full darkness
+        dark.setColor(new Color(0, 0, 0, 245));
+        dark.fillRect(0, 0, width, height);
+
+        // Erase darkness progressively around the hero
+        Position p = game.getHero().getPos();
+        removeDarkness(dark, p.x, p.y, LIGHT_RADIUS);
+
+        // Erase darkness around torches
+        for (Point source : game.getPlateau().getLightSources()) {
+            drawBlock(g2, images.get("torch"), source.x, source.y);
+            removeDarkness(dark, source.x, source.y, LIGHT_RADIUS);
+        }
+
+        dark.dispose();
+
+        g2.drawImage(darkness, 0, 0, null);
+    }
+
+    private void removeDarkness(Graphics2D g2, float xx, float yy, int radius) {
+        int x = (int) (xx * TAILLE_CASE)
+            + TAILLE_CASE / 2
+            - cameraX;
+
+        int y = (int) (yy * TAILLE_CASE)
+            + TAILLE_CASE / 2
+            - cameraY;
+
+        float[] fractions = {0f, 0.6f, 1f};
+
+        Color[] colors = {
+            new Color(0, 0, 0, 245),
+            new Color(0, 0, 0, 100),
+            new Color(0, 0, 0, 0)
+        };
+
+        RadialGradientPaint gradient = new RadialGradientPaint(
+            new Point(x, y),
+            radius,
+            fractions,
+            colors
+        );
+
+        g2.setComposite(AlphaComposite.DstOut);
+        g2.setPaint(gradient);
+        g2.fillOval(
+            x - radius, y - radius,
+            radius * 2, radius * 2
+        );
+
+        g2.setComposite(AlphaComposite.SrcOver);
+    }
+
+    private void drawEffect(Graphics2D crayon) {
+
+        String effectName = game.getVisualEffect();
+
+        if (effectName.isEmpty())
+            return;
+
+        VisualEffect visual = visuals.get(effectName);
+
+        BufferedImage beam = visual.getCurrentFrame();
+
+        int width = 3 * TAILLE_CASE;
+
+        int height = (int) (
+            beam.getHeight()
+            * (width / (double) beam.getWidth())
+        );
+
+        crayon.drawImage(
+            beam,
+            (game.getHero().getPos().xPrev() - 1) * TAILLE_CASE,
+            (game.getHero().getPos().yPrev() + 1) * TAILLE_CASE - height,
+            width,
+            height,
+            null
+        );
+
+        if (visual.isFinished()) {
+            visual.reset();
+            game.unsetVisual();
+        }
+
+        visual.nextFrame();
+    }
+
+    private void drawMessage(Graphics2D crayon) {
+
+        crayon.setFont(new Font("Arial", Font.BOLD, 18));
+
+        if (!game.getMessage().isEmpty()) {
+
+            crayon.setColor(Color.WHITE);
+
+            crayon.drawString(
+                game.getMessage(),
+                20,
+                screenHeight - 20
+            );
+        }
+    }
+
+    private void drawHero(Graphics2D crayon) {
+
+        Hero hero = game.getHero();
+
+        String animation =
+            hero.getAnimationState()
+            + "_"
+            + hero.getAnimationDirection();
+
+        drawEntity(
+            crayon,
+            images.get(animation),
+            hero
+        );
+    }
+
+    private void drawPlateau(Graphics2D crayon) {
+
+        Plateau p = game.getPlateau();
+
+        for (int y = 0; y < p.getHauteur(); y++) {
+
+            for (int x = 0; x < p.getLargeur(); x++) {
+
+                String image = switch (p.getBlockType(x, y)) {
+                    case WALL -> "wall";
+                    case TRAP -> "trap";
+                    case PORTAL -> "portal";
+                    case EXIT -> "exit";
+                    case TRIGGER -> "";
+                    case EMPTY -> null;
+                };
+
+                Trigger t = p.getBlockTrigger(x, y);
+
+                if (image == null)
+                    continue;
+
+                else if (t != null)
+                    drawBlock(crayon, t.getImage(), x, y);
+
+                else
+                    drawBlock(crayon, images.get(image), x, y);
+            }
+        }
+    }
+
+    private void drawBackground(
+        Graphics2D crayon,
+        int w,
+        int h
+    ) {
+
+        crayon.drawImage(
+            images.get("background"),
+            0, 0, w, h,
+            null
+        );
+		// crayon.setColor(new Color(0, 0, 0));
+    	// crayon.fillRect(0, 0, w, h);
+    }
+
+    private void drawEntity(
+        Graphics2D crayon,
+        Image image,
+        Entity e
+    ) {
+
+        drawUnit(
+            crayon,
+            image,
+            (int) (e.getPos().x * TAILLE_CASE),
+            (int) (e.getPos().y * TAILLE_CASE)
+        );
+    }
+
+    private void drawBlock(
+        Graphics2D crayon,
+        Image image,
+        int x,
+        int y
+    ) {
+
+        drawUnit(
+            crayon,
+            image,
+            x * TAILLE_CASE,
+            y * TAILLE_CASE
+        );
+    }
+
+    private void drawUnit(
+        Graphics2D crayon,
+        Image image,
+        int x,
+        int y
+    ) {
+
+        crayon.drawImage(
+            image,
+            x,
+            y,
+            TAILLE_CASE,
+            TAILLE_CASE,
+            null
+        );
+    }
+
+    @Override
+    public int getWidth() {
+        return screenWidth;
+    }
+
+    @Override
+    public int getHeight() {
+        return screenHeight;
+    }
+
+    /**
+     * Draws the hero health bar in screen coordinates.
+     */
+    private void drawHealthBar(Graphics2D g2, Hero hero) {
+
+        int x = 20;
+        int y = 20;
+        int width = 120;
+        int height = 20;
+
+        int maxHp = hero.getMaxHp();
+        int currentHp = hero.getHealthPoints();
+
+        // Background
+        g2.setColor(Color.DARK_GRAY);
+        g2.fillRoundRect(x, y, width, height, 10, 10);
+
+        // Current health
+        int healthWidth =
+            (int) ((double) currentHp / maxHp * width);
+
+        g2.setColor(Color.GREEN);
+        g2.fillRoundRect(x, y, healthWidth, height, 10, 10);
+
+        // Border
+        g2.setColor(Color.WHITE);
+        g2.drawRoundRect(x, y, width, height, 10, 10);
+
+        // HP text
+        String text = currentHp + " / " + maxHp;
+
+        g2.setFont(new Font("Arial", Font.BOLD, 12));
+
+        FontMetrics fm = g2.getFontMetrics();
+
+        int textX =
+            x + (width - fm.stringWidth(text)) / 2;
+
+        int textY =
+            y + (height - fm.getHeight()) / 2
+            + fm.getAscent();
+
+        g2.drawString(text, textX, textY);
+    }
 }

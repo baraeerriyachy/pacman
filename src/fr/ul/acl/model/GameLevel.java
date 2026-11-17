@@ -7,6 +7,8 @@ import java.util.ArrayList;
 public final class GameLevel {
 
     private static final List<GameLevel> LEVELS = new ArrayList<>();
+    public static int LatestDifficulty;
+
     public static String[] DIFFICULTIES = {
             "easy", "moderate", "difficult"
         };
@@ -21,18 +23,16 @@ public final class GameLevel {
                 ));
             }
         }
-        for (int level = 4; level <= 12; level++) {
-            LEVELS.add(new GameLevel(
-                "Level " + level + " - " + DIFFICULTIES[2],
-                3,
-                DIFFICULTIES[2] + "/level0.txt"
-            ));
+        for(int i = 0; i < 6; i++){
+            LEVELS.get(i).unlock();
         }
+        LEVELS.get(5).setDark();
     }
 
     private final String name;
     private final int difficulty;
     private final String mapFile;
+    private boolean darkness;
     private boolean locked;
 
     public GameLevel(String name, int difficulty, String mapFile) {
@@ -45,7 +45,8 @@ public final class GameLevel {
         this.name = name;
         this.difficulty = difficulty;
         this.mapFile = mapFile;
-        this.locked = false;
+        this.locked = true;
+        this.darkness = false;
     }
 
     // Queries
@@ -72,8 +73,18 @@ public final class GameLevel {
     }
 
     // Actions
-
     public void unlock() {
         locked = false;
+        LatestDifficulty = this.difficulty;
+    }
+
+    // Actions
+    public void setDark() {
+        darkness = true;
+    }
+
+    // Actions
+    public boolean isDark() {
+        return darkness;
     }
 }

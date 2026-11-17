@@ -30,13 +30,14 @@ public class LevelSelectionPanel extends JPanel {
         this.levels = levels;
         this.onSelect = onSelect;
 
+        currentDifficulty = GameLevel.LatestDifficulty;
+
         setLayout(new BorderLayout(15, 20));
         setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
         createHeader();
         createContent();
         
-        levels.get(0).unlock();
         updateLevels();
     }
 

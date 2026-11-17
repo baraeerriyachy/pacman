@@ -1,5 +1,14 @@
-__ __ __ __
-HR __ LV1 __
-__ __ __ __
-LV1 __ SW1 SW1
-__ __ SW1 EX
+HR __ __ __ __ BT WL __ __ __ __ __ TR TR WL __ __ __ __
+__ TR TR __ BT __ WL __ WL WL WL __ __ __ WL __ __ TR __
+__ WL WL WL D1 __ WL __ WL LV1 WL __ __ __ WL __ WL TR WL
+__ __ ZB __ __ __ __ __ WL __ WL __ GH __ __ __ WL LV1 WL
+__ WL __ WL __ WL __ BT WL __ WL __ WL WL __ __ WL __ __
+__ __ __ __ __ WL __ __ __ __ __ WL __ __ __ WL GH WL __
+WL WL __ WL TR TR WL WL __ WL WL WL __ WL __ __ __ __ __
+__ WL WL WL WL WL __ WL WL BT WL __ __ WL WL __ WL WL WL
+__ WL GH __ __ __ __ __ __ __ WL __ __ __ WL __ __ __ __
+LV1 WL __ WL WL WL WL __ WL __ WL WL __ WL WL __ __ P1 __
+__ __ __ __ GH WL __ __ WL ZB __ __ __ WL __ WL TR TR WL
+WL WL __ WL __ WL __ WL WL WL __ WL WL BT __ WL WL WL __
+__ __ TR TS __ __ WL __ __ __ __ __ __ __ __ SW1 __ EX __
+__ WL WL WL WL WL WL __ WL WL BT WL __ WL __ SW1 __ __ __

@@ -47,6 +47,10 @@ public class MapReader {
             case "wall":
                 plateau.setBlock(x, y, Block.wall(null));
                 break;
+            
+            case "torch":
+                plateau.addLightSource(x, y);
+                break;
 
             case "zombie":
                 monstres.add(Monstre.zombie(
@@ -238,7 +242,7 @@ public class MapReader {
 
                 if (cases.length != largeur) {
                     throw new IOException(
-                        "Les lignes de la carte doivent avoir le même nombre de cases."
+                        "Les lignes de la carte doivent avoir le même nombre de cases : " + y
                     );
                 }
 
