@@ -12,6 +12,8 @@ public class GameOverScreen extends JPanel {
     public GameOverScreen(
             boolean won,
             boolean hasNextLevel,
+            int tresorsCollectes,
+            int nombreTotalTresors,
             Runnable retryAction,
             Runnable nextLevelAction,
             Runnable selectionAction,
@@ -25,7 +27,16 @@ public class GameOverScreen extends JPanel {
                 SwingConstants.CENTER);
 
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
+        
+        JLabel treasuresLabel = new JLabel(
+        		"Trésors collectés : " + tresorsCollectes
+                + " / " + nombreTotalTresors,
+                SwingConstants.CENTER
+        );
 
+        treasuresLabel.setFont(
+                new Font("SansSerif", Font.BOLD, 18)
+        );
         ImageIcon animation = new ImageIcon(
                 getClass().getResource(
                         won ? "/victory.gif" : "/lose.gif"));
@@ -53,7 +64,11 @@ public class GameOverScreen extends JPanel {
         buttons.add(selection);
         buttons.add(quit);
 
-        add(title, BorderLayout.NORTH);
+        JPanel header = new JPanel(new GridLayout(2, 1));
+        header.add(title);
+        header.add(treasuresLabel);
+
+        add(header, BorderLayout.NORTH);
         add(image, BorderLayout.CENTER);
         add(buttons, BorderLayout.SOUTH);
     }
