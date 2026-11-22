@@ -2,7 +2,6 @@
 package fr.ul.acl.engine;
 
 import javax.swing.SwingUtilities;
-import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.util.List;
 
@@ -121,16 +120,14 @@ public class GameEngineGraphical {
 
         gameRunning = false;
 
-        boolean won = finishedGame.hasWon();
-
-        if (won) {
+        if (finishedGame.hasWon()) {
             unlockNextLevel();
         }
 
         boolean hasNext = getNextLevel() != null;
 
         GameOverScreen screen = new GameOverScreen(
-            won,
+            finishedGame,
             hasNext,
             this::retryLevel,
             this::startNextLevel,
@@ -176,31 +173,11 @@ public class GameEngineGraphical {
     }
 
     private void backToLevelSelection() {
-        int choice = JOptionPane.showConfirmDialog(
-            null,
-            "Give up the current game and return to level selection?",
-            "Leave current game?",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.PLAIN_MESSAGE
-        );
-
-        if (choice == JOptionPane.YES_OPTION) {
+        if (gui.confirmReturnToLevelSelection()) {
             showLevelSelection();
         }
     }
 
-    private void showGameOver(boolean won) {
-        GameOverScreen screen = new GameOverScreen(
-            won,
-            getNextLevel() != null,
-            this::retryLevel,
-            this::startNextLevel,
-            this::showLevelSelection,
-            this::quit
-        );
-
-        gui.showGameOver(screen);
-    }
 
     private void stopGameLoop(Runnable callback) {
         gameRunning = false;

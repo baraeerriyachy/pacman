@@ -38,6 +38,20 @@ public class GraphicalInterface {
         HelpReader.loadHelp();
     }
 
+    public boolean confirmReturnToLevelSelection() {
+        int choice = JOptionPane.showConfirmDialog(
+            frame,
+            "Give up the current game and return to level selection?",
+            "Leave current game?",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        drawingPanel.requestFocusInWindow();
+
+        return choice == JOptionPane.YES_OPTION;
+    }
+
     private void showHelp() {
         JScrollPane help = HelpReader.helpPane;
         help.setPreferredSize(new Dimension(650, 450));
@@ -58,21 +72,30 @@ public class GraphicalInterface {
                 JOptionPane.INFORMATION_MESSAGE
             );    
         }
+
+        drawingPanel.requestFocusInWindow();
     }
 
     public void showLevelSelection(
             List<GameLevel> levels,
-            Consumer<GameLevel> onSelect) {
+            Consumer<GameLevel> onSelect
+            ) {
 
         cards.removeAll();
 
         cards.add(
-            new LevelSelectionPanel(levels, onSelect),
+            new LevelSelectionPanel(levels, onSelect, 
+                new OptionsMenu(
+                    frame,
+                    controller,
+                    controller.getMusicPlayer(),
+                    () -> {}
+                )),
             SELECTION
         );
 
         cardLayout.show(cards, SELECTION);
-        frame.setSize(600, 450);
+        frame.setSize(700, 450);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         frame.revalidate();

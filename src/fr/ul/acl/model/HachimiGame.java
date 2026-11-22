@@ -77,6 +77,7 @@ public class HachimiGame implements Game {
 
 				if (effects.exit()) {
 					won = true;
+					clock.pause();
 				}
 
 				Point des = effects.destination();
@@ -194,5 +195,11 @@ public class HachimiGame implements Game {
 
 		clock.start();
 	}
+
+	public long getElapsedTime() {
+		return clock.getTime() / 1_000_000_000L;
+	}
 }
+
+
 

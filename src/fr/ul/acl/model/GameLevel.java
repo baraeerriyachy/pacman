@@ -34,6 +34,7 @@ public final class GameLevel {
     private final String mapFile;
     private boolean darkness;
     private boolean locked;
+    private int stars;
 
     public GameLevel(String name, int difficulty, String mapFile) {
         if (name == null || name.isBlank()
@@ -47,6 +48,7 @@ public final class GameLevel {
         this.mapFile = mapFile;
         this.locked = true;
         this.darkness = false;
+        this.stars = 0;
     }
 
     // Queries
@@ -72,10 +74,23 @@ public final class GameLevel {
         return locked;
     }
 
+    public int getStars() {
+        return stars;
+    }
+
     // Actions
     public void unlock() {
         locked = false;
         LatestDifficulty = this.difficulty;
+    }
+    
+
+    public void setStars(int stars) {
+        if (stars < 0 || stars > 3) {
+            throw new IllegalArgumentException("Stars must be between 0 and 3.");
+        }
+
+        this.stars = Math.max(this.stars, stars);
     }
 
     // Actions
