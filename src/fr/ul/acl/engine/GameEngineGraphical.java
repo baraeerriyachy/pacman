@@ -130,13 +130,15 @@ public class GameEngineGraphical {
         boolean hasNext = getNextLevel() != null;
 
         GameOverScreen screen = new GameOverScreen(
-            won,
-            hasNext,
-            this::retryLevel,
-            this::startNextLevel,
-            this::showLevelSelection,
-            this::quit
-        );
+        	    won,
+        	    hasNext,
+        	    finishedGame.getTresorsCollectes(),
+        	    finishedGame.getNombreTotalTresors(),
+        	    this::retryLevel,
+        	    this::startNextLevel,
+        	    this::showLevelSelection,
+        	    this::quit
+        	);
 
         gui.showGameOver(screen);
     }
@@ -193,6 +195,8 @@ public class GameEngineGraphical {
         GameOverScreen screen = new GameOverScreen(
             won,
             getNextLevel() != null,
+            game.getTresorsCollectes(),
+            game.getNombreTotalTresors(),
             this::retryLevel,
             this::startNextLevel,
             this::showLevelSelection,

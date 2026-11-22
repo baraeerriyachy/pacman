@@ -24,6 +24,7 @@ public class HachimiGame implements Game {
 	private String visualEffect = "";
 	private boolean stopped = false;
 	private final GameClock clock = new GameClock();
+	private int tresorsCollectes = 0;
 
     /** Construit une partie sur le niveau choisi. */
     public HachimiGame(GameLevel level) throws IOException {
@@ -86,9 +87,19 @@ public class HachimiGame implements Game {
 					stopped = true;
 				}
 
+
 				Trigger t = effects.trigger();
+
 				if (t != null) {
-					t.activate();
+				    if (t instanceof Tresor) {
+				        Tresor tresor = (Tresor) t;
+
+				        if (tresor.collect()) {
+				            tresorsCollectes++;
+				        }
+				    } else {
+				        t.activate();
+				    }
 				}
 			
 			case IDLE:
@@ -122,6 +133,15 @@ public class HachimiGame implements Game {
 		return pos;
 	}
 
+	
+	public int getTresorsCollectes() {
+	    return tresorsCollectes;
+	}
+	
+	public int getNombreTotalTresors() {
+	    return plateau.getNombreTotalTresors();
+	}
+	
 	/**
 	 * verifier si le jeu est fini
 	 */
@@ -189,9 +209,11 @@ public class HachimiGame implements Game {
 		monstres = lecteur.getMonstres();
 		timedGroups = lecteur.gettimedGroups();
 
+		
+		
 	    won = false;
 		stopped = false;
-
+		tresorsCollectes = 0;
 		clock.start();
 	}
 }

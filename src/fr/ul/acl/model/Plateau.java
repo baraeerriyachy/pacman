@@ -133,4 +133,20 @@ public class Plateau {
     public boolean isInteracable(){
         return interacable;
     }
+    
+    public int getNombreTotalTresors() {
+        int total = 0;
+
+        for (int x = 0; x < largeur; x++) {
+            for (int y = 0; y < hauteur; y++) {
+                Trigger trigger = grid[x][y].getTrigger();
+
+                if (trigger instanceof Tresor) {
+                    total++;
+                }
+            }
+        }
+
+        return total;
+    }
 }
