@@ -23,7 +23,7 @@ PACMAN
                 ├───resource
                 ├───start
                 └───tests
-
+```
 
 ## Niveaux de difficulté
 
