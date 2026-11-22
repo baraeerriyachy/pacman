@@ -16,8 +16,10 @@ public class LevelSelectionPanel extends JPanel {
     private int currentDifficulty = 1;
 
     private JLabel difficultyLabel;
+    private JLabel starsLabel;
     private JButton previousButton;
     private JButton nextButton;
+    private JButton settingsButton;
     private JPanel levelGrid;
 
     private static final Dimension LEVEL_SIZE =
@@ -25,7 +27,8 @@ public class LevelSelectionPanel extends JPanel {
 
     public LevelSelectionPanel(
             List<GameLevel> levels,
-            Consumer<GameLevel> onSelect) {
+            Consumer<GameLevel> onSelect,
+            OptionsMenu settings) {
 
         this.levels = levels;
         this.onSelect = onSelect;
@@ -35,21 +38,32 @@ public class LevelSelectionPanel extends JPanel {
         setLayout(new BorderLayout(15, 20));
         setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
-        createHeader();
+        createHeader(settings);
         createContent();
-        
+
         updateLevels();
     }
 
-    private void createHeader() {
+    private void createHeader(OptionsMenu settings) {
+
+        JPanel header = new JPanel(new BorderLayout());
+        JPanel settingsRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 
         JLabel title = new JLabel(
-                "HACHIMI - SELECT YOUR LEVEL",
+                "SELECT YOUR LEVEL",
                 SwingConstants.CENTER);
 
         title.setFont(new Font("SansSerif", Font.BOLD, 22));
 
-        add(title, BorderLayout.NORTH);
+        settingsButton = new JButton("🛠");
+        settingsButton.setToolTipText("Settings");
+        settingsButton.addActionListener(e -> settings.setVisible(true));
+        settingsRow.add(settingsButton);
+
+        header.add(settingsRow, BorderLayout.NORTH);
+        header.add(title, BorderLayout.CENTER);
+
+        add(header, BorderLayout.NORTH);
     }
 
     private void createContent() {
@@ -70,14 +84,14 @@ public class LevelSelectionPanel extends JPanel {
         previousButton = new JButton("◀");
         nextButton = new JButton("▶");
 
-        difficultyLabel = new JLabel(
-                "",
-                SwingConstants.CENTER);
-
+        difficultyLabel = new JLabel("", SwingConstants.CENTER);
         difficultyLabel.setFont(
                 new Font("SansSerif", Font.BOLD, 20));
 
-        difficultyLabel.setPreferredSize(new Dimension(220, 30));
+        starsLabel = new JLabel("", SwingConstants.CENTER);
+        starsLabel.setFont(
+                new Font("SansSerif", Font.BOLD, 16));
+        starsLabel.setForeground(new Color(220, 165, 30));
 
         previousButton.addActionListener(e -> {
             if (currentDifficulty > 1) {
@@ -95,11 +109,12 @@ public class LevelSelectionPanel extends JPanel {
 
         selector.add(previousButton);
         selector.add(difficultyLabel);
+        selector.add(starsLabel);
         selector.add(nextButton);
 
         content.add(selector, BorderLayout.NORTH);
     }
-
+    
     private void createLevelGrid(JPanel content) {
 
         levelGrid = new JPanel(new GridBagLayout());
@@ -132,6 +147,8 @@ public class LevelSelectionPanel extends JPanel {
         nextButton.setEnabled(
                 currentDifficulty < GameLevel.DIFFICULTIES.length);
 
+        updateStars();
+
         levelGrid.removeAll();
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -151,18 +168,41 @@ public class LevelSelectionPanel extends JPanel {
                 continue;
             }
 
-            JButton button = new JButton(
-                    level.isLocked()
-                            ? "🔒"
-                            : level.getName());
+            JPanel levelPanel = new JPanel(new BorderLayout(5, 5));
+            levelPanel.setPreferredSize(LEVEL_SIZE);
+            levelPanel.setBorder(
+                    BorderFactory.createLineBorder(Color.GRAY, 1));
 
-            button.setPreferredSize(new Dimension(110, 80));
-            button.setMinimumSize(new Dimension(0, 80));
-
+            JButton button = new JButton();
+            button.setLayout(new GridBagLayout());
+            button.setPreferredSize(LEVEL_SIZE);
             button.setEnabled(!level.isLocked());
 
-            button.addActionListener(
-                    e -> onSelect.accept(level));
+            JPanel buttonContent = new JPanel();
+            buttonContent.setLayout(new BoxLayout(buttonContent, BoxLayout.Y_AXIS));
+            buttonContent.setOpaque(false);
+
+            JLabel nameLabel = new JLabel(
+                    level.isLocked() ? "🔒" : level.getName());
+
+            nameLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+            nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            JLabel stars = new JLabel(getStarsText(level.getStars()));
+            stars.setFont(new Font("SansSerif", Font.BOLD, 17));
+            stars.setForeground(new Color(220, 165, 30));
+            stars.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            buttonContent.add(nameLabel);
+
+            if (!level.isLocked()) {
+                buttonContent.add(Box.createVerticalStrut(2));
+                buttonContent.add(stars);
+            }
+
+            button.add(buttonContent);
+
+            button.addActionListener(e -> onSelect.accept(level));
 
             gbc.gridx = column;
             gbc.gridy = row;
@@ -171,7 +211,7 @@ public class LevelSelectionPanel extends JPanel {
 
             column++;
 
-            if (column == 3) {
+            if (column == 4) {
                 column = 0;
                 row++;
             }
@@ -188,5 +228,36 @@ public class LevelSelectionPanel extends JPanel {
 
         levelGrid.revalidate();
         levelGrid.repaint();
+    }
+
+    private void updateStars() {
+
+        int earnedStars = 0;
+        int maxStars = 0;
+
+        for (GameLevel level : levels) {
+            if (level.getDifficulty() == currentDifficulty) {
+                earnedStars += level.getStars();
+                maxStars += 3;
+            }
+        }
+
+        starsLabel.setText(
+                "★ " + earnedStars + " / " + maxStars);
+    }
+
+    private String getStarsText(int stars) {
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < 3; i++) {
+            result.append(i < stars ? "★" : "☆");
+        }
+
+        return result.toString();
+    }
+
+    private void openSettings() {
+        // Connect this to your existing settings/options panel.
     }
 }

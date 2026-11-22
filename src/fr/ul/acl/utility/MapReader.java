@@ -82,7 +82,7 @@ public class MapReader {
                 break;
 
             case "treasure":
-                plateau.setBlock(x, y, Block.trigger(new Tresor()));
+                plateau.addTreasure(x, y, Block.trigger(new Trigger(VisualEffect.getTexture("tresor"))));
                 break;
             
             case "exit":

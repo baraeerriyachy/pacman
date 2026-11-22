@@ -8,6 +8,7 @@ public class Plateau {
     private final int hauteur;
     private final Block[][] grid;
     private boolean interacable;
+    private List<Trigger> tresors = new ArrayList<> ();
     private final List<Point> lightSources = new ArrayList<>();
 
     public Plateau(int largeur, int hauteur) {
@@ -122,6 +123,11 @@ public class Plateau {
         grid[x][y] = block;
     }
 
+    public void addTreasure(int x, int y, Block block) {
+        grid[x][y] = block;
+        tresors.add(block.getTrigger());
+    }
+
     public int getLargeur() {
         return largeur;
     }
@@ -135,18 +141,12 @@ public class Plateau {
     }
     
     public int getNombreTotalTresors() {
-        int total = 0;
-
-        for (int x = 0; x < largeur; x++) {
-            for (int y = 0; y < hauteur; y++) {
-                Trigger trigger = grid[x][y].getTrigger();
-
-                if (trigger instanceof Tresor) {
-                    total++;
-                }
-            }
-        }
-
-        return total;
+        return tresors.size();
     }
+
+    public int getTresorsCollectes() {
+        return (int) tresors.stream()
+            .filter(Trigger::isActivated)
+            .count();
+	}
 }
