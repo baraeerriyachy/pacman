@@ -20,7 +20,7 @@
 | Implémentation des portes de téléportation permettant au héros de se déplacer vers une autre zone de la carte | Alson | Terminé |
 | Implémentation des monstres intelligents : poursuite du héros, déplacement à travers les obstacles, etc. | Alson | En cours |
 | Implémentation de pièges avec activation conditionnée par le temps | Alson | Terminé |
-| Écrire les tests unitaires pour monstre, piège, trésor et porte de téléportation | Alson | Terminé |
+| Écrire les tests unitaires pour monstre, piège, trésor et porte de téléportation | Paulino + Alson | Terminé |
 
 ### Priorité basse
 

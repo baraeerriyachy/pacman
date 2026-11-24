@@ -194,6 +194,7 @@ public class HachimiGame implements Game {
 
 	    won = false;
 		stopped = false;
+		effects = new BlockEffects(0, null, false, null);
 		clock.start();
 	}
 
