@@ -1,69 +1,102 @@
 package fr.ul.acl.tests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-
 import fr.ul.acl.model.Hero;
+import fr.ul.acl.model.Position;
 
-/**
- * Tests de Hero.
- * Rappel : Hero stocke des float et deplacer(nx, ny) DEFINIT la nouvelle
- * position (ce n'est pas un decalage a ajouter a la position actuelle).
- */
-public class HeroTest {
+/** Tests unitaires de Hero (API actuelle: Entity + Position). */
+class HeroTest {
+    private static final float EPS = 0.0001f;
 
-    private static final float DELTA = 0.0001f;
-
-    @Test
-    public void positionInitiale() {
-        Hero h = new Hero(2, 3);
-        assertEquals(2f, h.getX(), DELTA);
-        assertEquals(3f, h.getY(), DELTA);
+    @Test void positionInitialeEntiere() {
+        Hero hero = new Hero(2, 3);
+        assertEquals(2f, hero.getPos().x, EPS);
+        assertEquals(3f, hero.getPos().y, EPS);
     }
 
-    @Test
-    public void positionInitialeAvecDecimaux() {
-        Hero h = new Hero(1.5f, 4.25f);
-        assertEquals(1.5f, h.getX(), DELTA);
-        assertEquals(4.25f, h.getY(), DELTA);
+    @Test void positionInitialeDecimale() {
+        Hero hero = new Hero(1.5f, 4.25f);
+        assertEquals(1.5f, hero.getPos().x, EPS);
+        assertEquals(4.25f, hero.getPos().y, EPS);
     }
 
-    @Test
-    public void deplacerDefinitLaNouvellePosition() {
-        Hero h = new Hero(2, 3);
-        h.deplacer(1, 0);
-        assertEquals(1f, h.getX(), DELTA);
-        assertEquals(0f, h.getY(), DELTA);
+    @Test void deplacementAvecDirectionDroite() {
+        Hero hero = new Hero(2, 3);
+        hero.setDirection(1, 0);
+        Position prochaine = hero.getNewPos();
+        assertEquals(2.2f, prochaine.x, EPS);
+        assertEquals(3f, prochaine.y, EPS);
+        hero.move();
+        assertEquals(2.2f, hero.getPos().x, EPS);
     }
 
-    @Test
-    public void deplacerAvecDesDecimaux() {
-        Hero h = new Hero(0, 0);
-        h.deplacer(5.2f, 7.4f);
-        assertEquals(5.2f, h.getX(), DELTA);
-        assertEquals(7.4f, h.getY(), DELTA);
+    @Test void deplacementVersLeHaut() {
+        Hero hero = new Hero(2, 3);
+        hero.setDirection(0, -1);
+        hero.move();
+        assertEquals(2f, hero.getPos().x, EPS);
+        assertEquals(2.8f, hero.getPos().y, EPS);
     }
 
-    @Test
-    public void leDernierDeplacementGagne() {
-        Hero h = new Hero(0, 0);
-        h.deplacer(1, 1);
-        h.deplacer(4, 2);
-        assertEquals(4f, h.getX(), DELTA);
-        assertEquals(2f, h.getY(), DELTA);
+    @Test void directionNulleNeBougePas() {
+        Hero hero = new Hero(2, 3);
+        hero.setDirection(0, 0);
+        hero.move();
+        assertEquals(2f, hero.getPos().x, EPS);
+        assertEquals(3f, hero.getPos().y, EPS);
+        assertEquals("idle", hero.getAnimationState());
     }
 
-    @Test
-    public void vitesseParDefaut() {
-        Hero h = new Hero(0, 0);
-        assertEquals(0.2f, h.getVitesse(), DELTA);
+    @Test void teleportationDefinitLaPosition() {
+        Hero hero = new Hero(2, 3);
+        hero.teleport(7, 5);
+        assertEquals(7f, hero.getPos().x, EPS);
+        assertEquals(5f, hero.getPos().y, EPS);
     }
 
-    @Test
-    public void deplacerNeChangePasLaVitesse() {
-        Hero h = new Hero(0, 0);
-        h.deplacer(3, 3);
-        assertEquals(0.2f, h.getVitesse(), DELTA);
+    @Test void changementDirectionChangeAnimation() {
+        Hero hero = new Hero(0, 0);
+        hero.setDirection(1, 0);
+        assertEquals("walk", hero.getAnimationState());
+        assertEquals("right", hero.getAnimationDirection());
+        hero.setDirection(0, 0);
+        assertEquals("idle", hero.getAnimationState());
+    }
+
+    @Test void pointsDeVieAuDemarrage() {
+        Hero hero = new Hero(0, 0);
+        assertEquals(100, hero.getMaxHp());
+        assertEquals(100, hero.getHealthPoints());
+        assertFalse(hero.isDead());
+    }
+
+    @Test void subirDesDegatsReduitLesPointsDeVie() {
+        Hero hero = new Hero(0, 0);
+        assertTrue(hero.takeDamage(25));
+        assertEquals(75, hero.getHealthPoints());
+        assertEquals("hurt", hero.getAnimationState());
+    }
+
+    @Test void degatsNulsOuNegatifsSontRejetes() {
+        Hero hero = new Hero(0, 0);
+        assertFalse(hero.takeDamage(0));
+        assertFalse(hero.takeDamage(-5));
+        assertEquals(100, hero.getHealthPoints());
+    }
+
+    @Test void invulnerabiliteBloqueDeuxDegatsImmediats() {
+        Hero hero = new Hero(0, 0);
+        assertTrue(hero.takeDamage(10));
+        assertFalse(hero.takeDamage(20));
+        assertEquals(90, hero.getHealthPoints());
+    }
+
+    @Test void degatsMortelsNeDonnePasPointsDeVieNegatifs() {
+        Hero hero = new Hero(0, 0);
+        assertTrue(hero.takeDamage(500));
+        assertEquals(0, hero.getHealthPoints());
+        assertTrue(hero.isDead());
+        assertFalse(hero.takeDamage(1));
     }
 }
