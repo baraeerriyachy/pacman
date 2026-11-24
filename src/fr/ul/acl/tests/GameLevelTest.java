@@ -93,4 +93,23 @@ class GameLevelTest {
         assertTrue(manquantes.isEmpty(), "Cartes manquantes : " + manquantes);
     }
 
+
+@Test
+void niveauxDebloquesPossedentUneCarte() {
+
+    for (GameLevel niveau : GameLevel.getAvailableLevels()) {
+
+        if (!niveau.isLocked()) {
+
+            String chemin = "/map/" + niveau.getMapFile();
+
+            assertNotNull(
+                GameLevel.class.getResource(chemin),
+                "Carte introuvable : " + chemin
+            );
+        }
+    }
+}
+
+
 }
