@@ -21,20 +21,6 @@ public class GameOverScreen extends JPanel {
             Runnable quitAction) {
 
         boolean won = game.hasWon();
-        long time = game.getElapsedTime();
-        int hp = game.getHero().getHealthPoints();
-        int collected = game.getPlateau().getTresorsCollectes();
-        int total = game.getPlateau().getNombreTotalTresors();
-
-        boolean treasure = collected == total;
-        boolean timeEarned = time <= TIME_LIMIT;
-        boolean hpEarned = hp >= HP_LIMIT;
-
-        int stars = (treasure ? 1 : 0)
-                + (timeEarned ? 1 : 0)
-                + (hpEarned ? 1 : 0);
-
-        game.getLevel().setStars(stars);
 
         setLayout(new BorderLayout(15, 15));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -46,7 +32,23 @@ public class GameOverScreen extends JPanel {
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
 
         JPanel center = new JPanel(new BorderLayout(10, 10));
+        
         if (won) {
+                long time = game.getElapsedTime();
+                int hp = game.getHero().getHealthPoints();
+                int collected = game.getPlateau().getTresorsCollectes();
+                int total = game.getPlateau().getNombreTotalTresors();
+
+                boolean treasure = collected == total;
+                boolean timeEarned = time <= TIME_LIMIT;
+                boolean hpEarned = hp >= HP_LIMIT;
+
+                int stars = (treasure ? 1 : 0)
+                        + (timeEarned ? 1 : 0)
+                        + (hpEarned ? 1 : 0);
+
+                game.getLevel().setStars(stars);
+
                 JPanel results = new JPanel();
                 results.setLayout(new BoxLayout(results, BoxLayout.Y_AXIS));
                 results.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));

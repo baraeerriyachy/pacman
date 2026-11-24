@@ -1,86 +1,110 @@
+
 package fr.ul.acl.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.awt.Point;
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
-
 import org.junit.jupiter.api.Test;
 
 import fr.ul.acl.model.GameLevel;
-import fr.ul.acl.model.HachimiGame;
-import fr.ul.acl.model.MapReader;
-import fr.ul.acl.model.Plateau;
 
 class GameLevelTest {
 
     @Test
-    void troisNiveauxDeDifficulteSontDisponibles() {
-        assertEquals(3, GameLevel.getAvailableLevels().size());
-        assertEquals("Facile", GameLevel.getAvailableLevels().get(0).getDifficulty());
-        assertEquals("Moyen", GameLevel.getAvailableLevels().get(1).getDifficulty());
-        assertEquals("Difficile", GameLevel.getAvailableLevels().get(2).getDifficulty());
+    void constructeurInitialiseCorrectementLeNiveau() {
+        GameLevel level = new GameLevel(
+                "Test Level", 2, "moderate/level1.txt");
+
+        assertEquals("Test Level", level.getName());
+        assertEquals(2, level.getDifficulty());
+        assertEquals("moderate/level1.txt", level.getMapFile());
+
+        assertTrue(level.isLocked());
+        assertFalse(level.isDark());
+        assertEquals(0, level.getStars());
     }
 
     @Test
-    void chaqueNiveauChargeUneCarteValideEtAccessible() throws Exception {
-        for (GameLevel level : GameLevel.getAvailableLevels()) {
-            MapReader reader = new MapReader(level.getMapFile());
-            Plateau plateau = reader.getPlateau();
-            Point start = reader.getDepart();
-            Point exit = plateau.getSortie();
+    void constructeurRefuseLesInformationsInvalides() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new GameLevel(null, 1, "map.txt"));
 
-            assertNotNull(start, level.getName());
-            assertNotNull(exit, level.getName());
-            assertFalse(plateau.estObstacle(start.x, start.y));
-            assertFalse(plateau.estObstacle(exit.x, exit.y));
-            assertTrue(sortieAccessible(plateau, start, exit),
-                    "La sortie doit etre accessible dans " + level.getName());
-        }
+        assertThrows(IllegalArgumentException.class,
+                () -> new GameLevel("", 1, "map.txt"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new GameLevel("Test", -1, "map.txt"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new GameLevel("Test", 4, "map.txt"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new GameLevel("Test", 1, null));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new GameLevel("Test", 1, ""));
     }
 
     @Test
-    void leJeuChargeLeNiveauSelectionneEtLeConserveAuRedemarrage() throws Exception {
-        GameLevel level = GameLevel.getAvailableLevels().get(1);
-        HachimiGame game = new HachimiGame("fichier_aide_absent.txt", level);
+    void debloquerUnNiveauLeRendAccessible() {
+        GameLevel level = new GameLevel(
+                "Test", 2, "moderate/level1.txt");
 
-        assertSame(level, game.getLevel());
-        assertEquals(12, game.getPlateau().getLargeur());
-        assertEquals(10, game.getPlateau().getHauteur());
+        assertTrue(level.isLocked());
 
-        game.recommencer();
+        level.unlock();
 
-        assertSame(level, game.getLevel());
-        assertEquals(12, game.getPlateau().getLargeur());
-        assertEquals(10, game.getPlateau().getHauteur());
-        assertFalse(game.isFinished());
-        assertEquals(0L, game.getElapsedSeconds());
+        assertFalse(level.isLocked());
     }
 
-    private boolean sortieAccessible(Plateau plateau, Point start, Point exit) {
-        Queue<Point> pending = new ArrayDeque<>();
-        Set<Point> visited = new HashSet<>();
-        pending.add(start);
-        visited.add(start);
-        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    @Test
+    void debloquerUnNiveauMetAJourLaDerniereDifficulte() {
+        GameLevel level = new GameLevel(
+                "Test", 3, "difficult/level1.txt");
 
-        while (!pending.isEmpty()) {
-            Point current = pending.remove();
-            if (current.equals(exit)) {
-                return true;
-            }
-            for (int[] direction : directions) {
-                Point next = new Point(current.x + direction[0], current.y + direction[1]);
-                if (plateau.estDansLimites(next.x, next.y)
-                        && !plateau.estObstacle(next.x, next.y)
-                        && visited.add(next)) {
-                    pending.add(next);
-                }
-            }
-        }
-        return false;
+        level.unlock();
+
+        assertEquals(3, GameLevel.LatestDifficulty);
+    }
+
+    @Test
+    void lesEtoilesRepresententLeMeilleurScoreObtenu() {
+        GameLevel level = new GameLevel(
+                "Test", 1, "easy/level1.txt");
+
+        level.setStars(2);
+        assertEquals(2, level.getStars());
+
+        level.setStars(1);
+        assertEquals(2, level.getStars());
+
+        level.setStars(3);
+        assertEquals(3, level.getStars());
+
+        level.setStars(0);
+        assertEquals(3, level.getStars());
+    }
+
+    @Test
+    void nombreDEtoilesDoitEtreEntreZeroEtTrois() {
+        GameLevel level = new GameLevel(
+                "Test", 1, "easy/level1.txt");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> level.setStars(-1));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> level.setStars(4));
+    }
+
+    @Test
+    void activerObscuriteModifieSonEtat() {
+        GameLevel level = new GameLevel(
+                "Test", 1, "easy/level1.txt");
+
+        assertFalse(level.isDark());
+
+        level.setDark();
+
+        assertTrue(level.isDark());
     }
 }
