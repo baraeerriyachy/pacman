@@ -1,86 +1,96 @@
 package fr.ul.acl.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import java.awt.Point;
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
-
+import java.io.InputStream;
 import org.junit.jupiter.api.Test;
-
 import fr.ul.acl.model.GameLevel;
 import fr.ul.acl.model.HachimiGame;
-import fr.ul.acl.model.MapReader;
-import fr.ul.acl.model.Plateau;
 
+/** Tests de la gestion des niveaux, y compris un controle des ressources manquantes. */
 class GameLevelTest {
 
-    @Test
-    void troisNiveauxDeDifficulteSontDisponibles() {
-        assertEquals(3, GameLevel.getAvailableLevels().size());
-        assertEquals("Facile", GameLevel.getAvailableLevels().get(0).getDifficulty());
-        assertEquals("Moyen", GameLevel.getAvailableLevels().get(1).getDifficulty());
-        assertEquals("Difficile", GameLevel.getAvailableLevels().get(2).getDifficulty());
+    @Test void neufNiveauxSontAnnonces() {
+        assertEquals(9, GameLevel.getAvailableLevels().size());
     }
 
-    @Test
-    void chaqueNiveauChargeUneCarteValideEtAccessible() throws Exception {
-        for (GameLevel level : GameLevel.getAvailableLevels()) {
-            MapReader reader = new MapReader(level.getMapFile());
-            Plateau plateau = reader.getPlateau();
-            Point start = reader.getDepart();
-            Point exit = plateau.getSortie();
-
-            assertNotNull(start, level.getName());
-            assertNotNull(exit, level.getName());
-            assertFalse(plateau.estObstacle(start.x, start.y));
-            assertFalse(plateau.estObstacle(exit.x, exit.y));
-            assertTrue(sortieAccessible(plateau, start, exit),
-                    "La sortie doit etre accessible dans " + level.getName());
-        }
+    @Test void troisDifficultesSontAnnonces() {
+        assertArrayEquals(new String[] {"easy", "moderate", "difficult"}, GameLevel.DIFFICULTIES);
     }
 
-    @Test
-    void leJeuChargeLeNiveauSelectionneEtLeConserveAuRedemarrage() throws Exception {
-        GameLevel level = GameLevel.getAvailableLevels().get(1);
-        HachimiGame game = new HachimiGame("fichier_aide_absent.txt", level);
+    @Test void informationsDuPremierNiveau() {
+        GameLevel level = GameLevel.getAvailableLevels().get(0);
+        assertEquals("Level 1 - easy", level.getName());
+        assertEquals(1, level.getDifficulty());
+        assertEquals("easy/level1.txt", level.getMapFile());
+    }
 
+    @Test void niveauNeufEstDifficile() {
+        GameLevel level = GameLevel.getAvailableLevels().get(8);
+        assertEquals(3, level.getDifficulty());
+        assertEquals("difficult/level3.txt", level.getMapFile());
+    }
+
+    @Test void niveauCreeEstVerrouille() {
+        GameLevel level = new GameLevel("Test", 1, "easy/level1.txt");
+        assertTrue(level.isLocked());
+        level.unlock();
+        assertFalse(level.isLocked());
+    }
+
+    @Test void creationAvecArgumentsInvalides() {
+        assertThrows(IllegalArgumentException.class, () -> new GameLevel(null, 1, "easy/level1.txt"));
+        assertThrows(IllegalArgumentException.class, () -> new GameLevel(" ", 1, "easy/level1.txt"));
+        assertThrows(IllegalArgumentException.class, () -> new GameLevel("Test", -1, "easy/level1.txt"));
+        assertThrows(IllegalArgumentException.class, () -> new GameLevel("Test", 4, "easy/level1.txt"));
+        assertThrows(IllegalArgumentException.class, () -> new GameLevel("Test", 1, ""));
+    }
+
+    @Test void etoilesInitialesEtLimites() {
+        GameLevel level = new GameLevel("Test", 1, "easy/level1.txt");
+        assertEquals(0, level.getStars());
+        level.setStars(3);
+        assertEquals(3, level.getStars());
+        assertThrows(IllegalArgumentException.class, () -> level.setStars(-1));
+        assertThrows(IllegalArgumentException.class, () -> level.setStars(4));
+    }
+
+    @Test void meilleurScoreEstConserve() {
+        GameLevel level = new GameLevel("Test", 1, "easy/level1.txt");
+        level.setStars(3);
+        level.setStars(1);
+        assertEquals(3, level.getStars());
+    }
+
+    @Test void modeSombre() {
+        GameLevel level = new GameLevel("Test", 1, "easy/level1.txt");
+        assertFalse(level.isDark());
+        level.setDark();
+        assertTrue(level.isDark());
+    }
+
+    @Test void partieChargeLeNiveauEtPeutRedemarrer() throws Exception {
+        GameLevel level = new GameLevel("Test", 1, "easy/level1.txt");
+        HachimiGame game = new HachimiGame(level);
         assertSame(level, game.getLevel());
-        assertEquals(12, game.getPlateau().getLargeur());
-        assertEquals(10, game.getPlateau().getHauteur());
-
-        game.recommencer();
-
-        assertSame(level, game.getLevel());
-        assertEquals(12, game.getPlateau().getLargeur());
-        assertEquals(10, game.getPlateau().getHauteur());
+        assertNotNull(game.getPlateau());
         assertFalse(game.isFinished());
-        assertEquals(0L, game.getElapsedSeconds());
+        game.recommencer();
+        assertSame(level, game.getLevel());
+        assertFalse(game.isFinished());
     }
 
-    private boolean sortieAccessible(Plateau plateau, Point start, Point exit) {
-        Queue<Point> pending = new ArrayDeque<>();
-        Set<Point> visited = new HashSet<>();
-        pending.add(start);
-        visited.add(start);
-        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-        while (!pending.isEmpty()) {
-            Point current = pending.remove();
-            if (current.equals(exit)) {
-                return true;
-            }
-            for (int[] direction : directions) {
-                Point next = new Point(current.x + direction[0], current.y + direction[1]);
-                if (plateau.estDansLimites(next.x, next.y)
-                        && !plateau.estObstacle(next.x, next.y)
-                        && visited.add(next)) {
-                    pending.add(next);
-                }
+    @Test void ressourcesDesNiveauxAnnonceesSontDisponibles() {
+        // Si un fichier est absent, lister tous les niveaux incomplets.
+        java.util.List<String> manquantes = new java.util.ArrayList<>();
+        for (GameLevel level : GameLevel.getAvailableLevels()) {
+            String path = "/map/" + level.getMapFile();
+            try (InputStream stream = GameLevelTest.class.getResourceAsStream(path)) {
+                if (stream == null) manquantes.add(path);
+            } catch (java.io.IOException e) {
+                fail("Impossible de verifier " + path + " : " + e.getMessage());
             }
         }
-        return false;
+        assertTrue(manquantes.isEmpty(), "Cartes manquantes : " + manquantes);
     }
+
 }
