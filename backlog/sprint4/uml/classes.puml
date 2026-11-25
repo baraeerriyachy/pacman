@@ -1,0 +1,313 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "fr.ul.acl.start" {
+
+    class Main {
+        + {static} main(args : String[]) : void
+    }
+}
+
+package "fr.ul.acl.engine" {
+
+    class GraphicalInterface {
+    }
+
+    class GameEngineGraphical {
+    }
+
+    interface GameController {
+    }
+
+    interface Game {
+    }
+
+    interface GamePainter {
+    }
+    class GameClock {
+    }
+}
+
+package "fr.ul.acl.controller" {
+    class HachimiController {
+        - Cmd commandeEnCours
+        + HachimiController HachimiController(MusicPlayer)
+        + Cmd getCommand()
+        + void keyPressed(KeyEvent)
+        + void keyReleased(KeyEvent)
+        + void keyTyped(KeyEvent)
+        + void resetCommand()
+    }
+    enum KeyboardLayout {
+        AZERTY
+        QWERTY
+    }
+    class MusicPlayer {}
+}
+
+package "fr.ul.acl.utility" {
+    class MonsterInitialiser{
+        + {static} void initialize(Monstre,Plateau)
+        - {static} int getMaxMove(Monstre,Plateau,Point)
+    }
+    class Config{
+        + {static} Map<String, int> DAMAGE
+        + {static} Map<String, int> SPEED
+    }
+    class MapReader{
+        - void processModele(String,String,int,int)
+        - void resolveIdentifiedElements()
+    }
+    class HelpReader {
+        + {static} JScrollPane helpPane
+        + {static} void loadHelp()
+    }
+}
+
+package "fr.ul.acl.model" {
+
+    class Mechanism {
+        + boolean canActivate()
+    }
+
+    class Trigger {
+        # boolean playingVisual
+        # boolean activated
+        + void activate()
+        + void deactivate()
+    }
+
+    class Hero {
+        - {static} MAX_HP : int
+        - {static} INVULNERABILITY_DURATION : long
+        - healthPoints : int
+        - lastDamageTime : long
+        - animationDirection : String
+        - animationState : String
+        + Hero(x : float, y : float)
+        + getAnimationState() : String
+        + getAnimationDirection() : String
+        + setDirection(dx : int, dy : int) : void
+        + getHealthPoints() : int
+        + getMaxHp() : int
+        + teleport(x : int, y : int) : void
+        + takeDamage(damage : int) : boolean
+        + isDead() : boolean
+    }
+
+    class Block{
+    - type : Type
+    - destination : Point
+    - damage : int
+    - trigger : Trigger
+    + {static} EMPTY : Block
+    - Block(type : Type, destination : Point, damage : int)
+    + setTrigger(trigger : Trigger) : void
+    + getTrigger() : Trigger
+    + {static} wall() : Block
+    + {static} exit() : Block
+    + {static} trap(damage : int) : Block
+    + {static} portal(destination : Point) : Block
+    + {static} trigger(trigger : Trigger) : Block
+    + getType() : Type
+    + getDestination() : Point
+    + getDamage() : int
+    }
+
+    enum Type{
+        WALL
+        TRAP
+        PORTAL
+        EMPTY
+        EXIT
+        TRIGGER
+    }
+
+    class Position {
+        + x : float
+        + y : float 
+        - {static} MARGIN : float
+        + Position(x : float, y : float)
+        + set(x : float, y : float) : void
+        + xNext() : int
+        + yNext() : int
+        + xPrev() : int
+        + yPrev() : int
+        + isOverlapping(p : Position) : boolean
+    }
+
+    class Plateau {
+        - int largeur
+        - int hauteur
+        - Block[][] grid
+        - boolean interacable
+        - List<Point> lightSources
+        + Plateau Plateau(int,int)
+        + void addLightSource(int,int)
+        + List<Point> getLightSources()
+        + boolean isInsideMap(Position)
+        + Block.Type getBlockType(int,int)
+        + Trigger getBlockTrigger(int,int)
+        + boolean isFree(Position)
+        + BlockEffects interact(Position)
+        + void setBlock(int,int,Block)
+        + void addTresure(int,int,Block)
+        + int getLargeur()
+        + int getHauteur()
+        + boolean isInteracable()
+        + int getNombreTotalTresors()
+        + int getTresorsCollectes()
+    }
+
+    class HachimiGame {
+        - boolean won
+        - BlockEffects effects
+        - String message
+        - String visualEffect
+        - boolean stopped
+        + void evolve(Cmd)
+        + Position evolveHero(Cmd)
+        + boolean isFinished()
+        + void toggleStopped()
+        + void unsetVisual()
+        + boolean hasWon()
+        + void recommencer()
+        + long getElapsedTime()
+    }
+
+    class GameLevel {
+        - {static} List<GameLevel> LEVELS
+        + {static} int LatestDifficulty
+        + {static} String[] DIFFICULTIES
+        - String name
+        - boolean darkness
+        - boolean locked
+        - int stars
+        + {static} List<GameLevel> getAvailableLevels()
+        + String getName()
+        + int getStars(int)
+        + void setStars()
+    }
+
+    class Monstre {
+        - damage : int
+        - maxMove : int
+        - moveCount : float
+        - intangible : boolean
+        + Monstre(x : float, y : float, damage : int, speed : float, intangible : boolean)
+        + {static} zombie(x : float, y : float) : Monstre
+        + {static} ghost(x : float, y : float) : Monstre
+        + isIntangible() : boolean
+        + getDamage() : int
+        + setMaxMove(max_move : int) : void
+        - inverseDirection() : void
+        + move() : void
+    }
+
+
+    abstract class Entity {
+        # pos : Position
+        # direction : Point
+        # vitesse : float
+        - nPos : Position
+        + Entity(x : float, y : float)
+        + Entity(x : float, y : float, vitesse : float)
+        + setDirection(dx : int, dy : int) : void
+        + getNewPos() : Position
+        + move() : void
+        + getPos() : Position
+    }
+
+    class TimedGroup {
+        - long duration
+        - long lastTransition
+        - boolean active
+        + void update(long)
+    }
+}
+
+package "fr.ul.acl.view" {
+    class GameOverScreen {
+        - {static} int TIME_LIMIT = 120;
+        - {static} int HP_LIMIT = 60;
+    }
+    class LevelSelectionPanel {
+    }
+    class VisualEffect{
+        + {static} VisualEffect getTexture(String)
+        + BufferedImage getCurrentFrame()
+    }
+    class HachimiPainter {
+        - {static} int TAILLE_CASE
+        - {static} int MAX_WIDTH
+        - {static} int MAX_HEIGHT
+        - {static} int LIGHT_RADIUS
+        - void loadImage(String,String)
+        + void draw(BufferedImage)
+        - void updateCamera()
+        - void drawDarkness(Graphics2D,int,int)
+        - void drawMessage(Graphics2D)
+        - void drawHealthBar(Graphics2D,Hero)
+    }
+    class OptionsMenu {
+    }
+}
+
+' Trigger relationships
+Block *-- "0..1" Trigger : trigger
+Trigger *-- "1" VisualEffect : visual
+Trigger o-- "*" Mechanism : dependents
+TimedGroup *-- "*" Trigger : targets
+Mechanism o-- "*" Trigger : requirements
+Plateau *-- "*" Trigger : tresors
+
+' Inheritance
+Hero --|> Entity
+Monstre --|> Entity
+Mechanism --|> Trigger
+
+' Interface implementation
+HachimiGame ..|> Game
+HachimiController ..|> GameController
+HachimiController --> MusicPlayer
+HachimiController --> KeyboardLayout
+HachimiPainter ..|> GamePainter
+
+' Game composition
+HachimiGame *-- "1" Plateau
+HachimiGame *-- "1" Hero
+HachimiGame *-- "1" GameClock
+HachimiGame *-- "1" GameLevel
+HachimiGame *-- "*" Monstre
+HachimiGame *-- "*" TimedGroup
+HachimiGame ..> MapReader : loads map
+MapReader ..> Config : monster stats
+MapReader ..> MonsterInitialiser : monster movement
+
+' Entity relationships
+Entity *-- "1" Position : pos
+Entity *-- "1" Position : nPos
+
+' Map relationships
+Plateau *-- "0..*" Block : grid
+Block --> Type
+
+' Painter relationships
+HachimiPainter --> HachimiGame
+HachimiPainter *-- "*" VisualEffect : specialEffect
+
+' Graphical engine relationships
+Main ..> GameEngineGraphical
+GameEngineGraphical --> GraphicalInterface
+GameEngineGraphical --> Game
+GameEngineGraphical --> GameOverScreen
+GameEngineGraphical --> GameController
+GameEngineGraphical --> GamePainter
+
+GraphicalInterface --> LevelSelectionPanel
+GraphicalInterface --> OptionsMenu
+GraphicalInterface --> HelpReader
+LevelSelectionPanel o-- "*" GameLevel
+@enduml

@@ -1,0 +1,74 @@
+
+
+@startuml
+
+participant "Trigger 1" as T1
+participant "Trigger 2" as T2
+participant "Mechanism 1..n" as M
+participant VisualEffect as Visual
+
+== Requirement registration ==
+
+M -> T1 : addDependent(this)
+M -> T2 : addDependent(this)
+
+== First trigger activation ==
+
+note over T1
+    Completion of the animation
+end note
+
+T1 -> T1 : Update activated
+
+loop For each dependent Mechanism
+    T1 -> M : canActivate()
+    activate M
+
+    M -> T1 : isActivated()
+    T1 --> M : true
+
+    M -> T2 : isActivated()
+    T2 --> M : false
+
+    M --> T1 : false
+    deactivate M
+end
+
+note right of M
+    Mechanisms remain inactive
+end note
+
+== Second trigger activation ==
+
+note over T2
+    Completion of the animation
+end note
+
+T2 -> T2 : Update activated
+
+loop For each dependent Mechanism
+    T2 -> M : canActivate()
+    activate M
+
+    M -> T1 : isActivated()
+    T1 --> M : true
+
+    M -> T2 : isActivated()
+    T2 --> M : true
+
+    M --> T2 : true
+    deactivate M
+
+    T2 -> M : activate()
+    activate M
+    M -> Visual : reset()
+    M -> M : playingVisual = true
+end
+
+deactivate M
+
+note right of M
+    Mechanisms activated
+end note
+
+@enduml
