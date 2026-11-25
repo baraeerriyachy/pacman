@@ -1,0 +1,38 @@
+
+@startuml
+
+participant HachimiGame
+participant Clock
+participant TimedGroup
+participant "Trigger (targets)" as Trigger
+participant VisualEffect as Visual
+
+activate HachimiGame
+HachimiGame -> Clock : getTime()
+activate Clock
+Clock --> HachimiGame : elapsedTime
+deactivate Clock
+
+loop For each TimedGroup
+    HachimiGame -> TimedGroup : update(elapsedTime)
+    activate TimedGroup
+
+    opt Duration reached
+        TimedGroup -> TimedGroup : Toggle active
+        TimedGroup -> TimedGroup : Update lastTransition
+
+        loop For each Trigger
+            alt active
+                TimedGroup -> Trigger : activate()
+                Trigger -> Visual : reset()
+            else inactive
+                TimedGroup -> Trigger : deactivate()
+                Trigger -> Visual : reverse()
+            end
+            Trigger -> Trigger : playingVisual = true
+        end
+        deactivate Trigger
+    deactivate TimedGroup
+end
+deactivate HachimiGame
+@enduml

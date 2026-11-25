@@ -1,45 +1,83 @@
+
 package fr.ul.acl.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.awt.Point;
+
 import org.junit.jupiter.api.Test;
+
 import fr.ul.acl.model.Block;
 import fr.ul.acl.model.Trigger;
+import fr.ul.acl.view.VisualEffect;
 
 class BlockTest {
-    @Test void caseVide() {
-        assertEquals(Block.Type.EMPTY, Block.EMPTY.getType());
-        assertEquals(0, Block.EMPTY.getDamage());
-        assertNull(Block.EMPTY.getDestination());
+
+    private Trigger createTrigger() {
+        return new Trigger(VisualEffect.getTexture("trap"));
     }
 
-    @Test void mur() {
-        Block block = Block.wall(null);
-        assertEquals(Block.Type.WALL, block.getType());
+    @Test
+    void emptyBlockIsCorrectlyInitialized() {
+        Block block = Block.EMPTY;
+
+        assertEquals(Block.Type.EMPTY, block.getType());
         assertNull(block.getTrigger());
+        assertNull(block.getDestination());
+        assertEquals(0, block.getDamage());
     }
 
-    @Test void piege() {
-        Block block = Block.trap(30, null);
+    @Test
+    void wallBlockContainsItsTrigger() {
+        Trigger trigger = createTrigger();
+        Block block = Block.wall(trigger);
+
+        assertEquals(Block.Type.WALL, block.getType());
+        assertSame(trigger, block.getTrigger());
+        assertNull(block.getDestination());
+        assertEquals(0, block.getDamage());
+    }
+
+    @Test
+    void exitBlockIsCorrectlyInitialized() {
+        Block block = Block.exit();
+
+        assertEquals(Block.Type.EXIT, block.getType());
+        assertNull(block.getTrigger());
+        assertNull(block.getDestination());
+        assertEquals(0, block.getDamage());
+    }
+
+    @Test
+    void trapBlockContainsDamageAndTrigger() {
+        Trigger trigger = createTrigger();
+        Block block = Block.trap(20, trigger);
+
         assertEquals(Block.Type.TRAP, block.getType());
-        assertEquals(30, block.getDamage());
+        assertEquals(20, block.getDamage());
+        assertSame(trigger, block.getTrigger());
+        assertNull(block.getDestination());
     }
 
-    @Test void portail() {
-        Point p = new Point(8, 2);
-        Block block = Block.portal(p);
+    @Test
+    void portalBlockContainsItsDestination() {
+        Point destination = new Point(5, 8);
+        Block block = Block.portal(destination);
+
         assertEquals(Block.Type.PORTAL, block.getType());
-        assertEquals(p, block.getDestination());
+        assertEquals(destination, block.getDestination());
+        assertNull(block.getTrigger());
+        assertEquals(0, block.getDamage());
     }
 
-    @Test void sortie() {
-        assertEquals(Block.Type.EXIT, Block.exit().getType());
-    }
-
-    @Test void declencheur() {
-        Trigger trigger = new Trigger(null);
+    @Test
+    void triggerBlockContainsItsTrigger() {
+        Trigger trigger = createTrigger();
         Block block = Block.trigger(trigger);
+
         assertEquals(Block.Type.TRIGGER, block.getType());
         assertSame(trigger, block.getTrigger());
+        assertNull(block.getDestination());
+        assertEquals(0, block.getDamage());
     }
 }

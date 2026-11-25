@@ -16,6 +16,9 @@ public class Trigger {
     }
 
     public Trigger(VisualEffect visual) {
+        if (visual == null) {
+            throw new IllegalArgumentException("VisualEffect cannot be null.");
+        }
         this.visual = visual;
         this.activated = false;
         this.playingVisual = false;
@@ -25,6 +28,13 @@ public class Trigger {
         if (!activated) {
             visual.reset();
             playingVisual = true;
+            activated = true;
+
+            for(Mechanism m : dependents){
+                if(m.canActivate()){
+                    m.activate();
+                }
+            }
         }
     }
 
@@ -32,8 +42,10 @@ public class Trigger {
         if (activated) {
             visual.reverse();
             playingVisual = true;
+            activated = false;
         }
     }
+
 
     public void setActived(){
         activated = true;
@@ -48,13 +60,7 @@ public class Trigger {
         if(playingVisual)
         {
             if(visual.isFinished()){
-                activated = !visual.isReversed();
                 playingVisual = false;
-                for(Mechanism m : dependents){
-                    if(m.canActivate()){
-                        m.activate();
-                    }
-                }
             }
             Image i = visual.getCurrentFrame();
             visual.nextFrame();
