@@ -17,8 +17,7 @@ import fr.ul.acl.model.Position;
 import fr.ul.acl.utility.MapReader;
 
 /**
- * Outils de tests : retrouver les positions sur le plateau au lieu de
- * supposer des coordonnees fixes pour les objets de la carte.
+ * Outils de tests : retrouver les positions sur le plateau 
  */
 final class TestPositionFinder {
     private static final float EPS = 0.0001f;
